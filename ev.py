@@ -19,7 +19,7 @@ class MotionSensorState:
     
 class RelayServer(threading.Thread):
 
-    def __init__(self);
+    def __init__(self):
         threading.Thread.__init__(self)
         
         self._cmdQueue = []
