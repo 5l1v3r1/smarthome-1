@@ -41,7 +41,7 @@ def getMessages():
 
         updates = r.json()
     
-    results = updates["result"]
+        results = updates["result"]
     except:
         return msgs
 
