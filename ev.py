@@ -19,18 +19,12 @@ def currentTime():
     return int(time.time())
 
 def sendMessage(msg):
-    global telegramToken
-    global telegramURL
-    global telegramChatId
 
     r = requests.get("{0}{1}/sendMessage?chat_id={2}&text={3}".format(config.telegramURL, config.telegramToken, config.telegramChatId, msg))
 
     return r.status_code == 200
 
 def getMessages():
-    global telegramToken
-    global telegramURL
-    global telegramChatId
     global lastMessageTs
     global lastUpdateId
 
