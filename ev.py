@@ -3,6 +3,8 @@
 import RPi.GPIO as GPIO
 import requests
 import os
+import socket
+import threading
 import time
 
 import config
@@ -14,6 +16,33 @@ class Source:
 class MotionSensorState:
     NOTTRIGGERED  = 0
     TRIGGEREDONCE = 1
+    
+class RelayServer(threading.Thread):
+
+    def __init__(self);
+        threading.Thread.__init__(self)
+        
+        self._cmdQueue = []
+        
+    def run(self):
+        
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.bind(("0.0.0.0", 42024))
+            s.listen()
+            while True:
+                conn, addr = s.accept()
+                with conn:
+                    while True:
+                        try:
+                            conn.sendall(self._cmdQueue.pop() + "\n")
+                        except:
+                            break
+                            
+                conn.close()
+                       
+        
+    def sendCommand(self, cmd):
+        self._cmdQueue.append(cmd)
     
 def currentTime():
     return int(time.time())
@@ -118,6 +147,9 @@ GPIO.setup(relayPin, GPIO.OUT)
 GPIO.setup(PIRPin, GPIO.IN,  pull_up_down=GPIO.PUD_DOWN)
 GPIO.output(relayPin, GPIO.HIGH)
 
+relayServer = RelayServer()
+relayServer.start()
+
 msgCnt = 0
 motionSensor = MotionSensorState.NOTTRIGGERED
 while True:
@@ -143,7 +175,8 @@ while True:
     if GPIO.input(PIRPin) == 1:
         if motionSensor == MotionSensorState.TRIGGEREDONCE:
             print("Hareket")
-            switchOn(Source.MOTION)
+            #switchOn(Source.MOTION)
+            relayServer.sendCommand("ON")
         else:
             motionSensor = MotionSensorState.TRIGGEREDONCE
     else:
@@ -151,7 +184,8 @@ while True:
 
     if shouldTurnSwitchOff():
         print("OFF")
-        switchOff()
+        #switchOff()
+        relayServer.sendCommand("OFF")
 
     time.sleep(0.1)
 
