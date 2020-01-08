@@ -33,6 +33,10 @@ class RelayServer(threading.Thread):
                 conn, addr = s.accept()
                 with conn:
                     while True:
+                        if len(self._cmdQueue) == 0:
+                            time.sleep(0.5)
+                            continue
+                            
                         try:
                             conn.sendall(self._cmdQueue.pop() + "\n")
                         except:
