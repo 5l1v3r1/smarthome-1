@@ -148,7 +148,7 @@ while True:
 
     if GPIO.input(PIRPin) == 1:
 	if motionSensor == MotionSensorState.TRIGGEREDONCE:
-            print("Hareket!")
+            print("Hareket")
             switchOn(Source.MOTION)
         else:
             motionSensor = MotionSensorState.TRIGGEREDONCE
