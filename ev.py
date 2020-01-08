@@ -41,9 +41,9 @@ def getMessages():
 
         updates = r.json()
     
-	results = updates["result"]
+    results = updates["result"]
     except:
-	return msgs
+        return msgs
 
     for update in results:
         lastUpdateId = update["update_id"]
