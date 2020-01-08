@@ -117,7 +117,7 @@ switchOnTs = 0
 lastMessageTs = currentTime()
 lastUpdateId = 0
 GPIO.setmode(GPIO.BCM)
-GPIO.setwarnings(False) # Birden fazla setup cagridiginda uyarı gostermesin diye
+GPIO.setwarnings(False) # Birden fazla setup cagirdiginda uyari gostermesin diye
 relayPin = 2
 PIRPin = 4
 GPIO.setup(relayPin, GPIO.OUT)
