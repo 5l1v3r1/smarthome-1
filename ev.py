@@ -38,7 +38,7 @@ class RelayServer(threading.Thread):
                             continue
                             
                         try:
-                            conn.sendall(self._cmdQueue.pop() + "\n")
+                            conn.sendall((self._cmdQueue.pop() + "\n").encode("ascii"))
                         except:
                             break
                             
@@ -116,7 +116,7 @@ def switchOn(source):
     
     if source == Source.MOTION and switchOnTs > 0 : return
 
-    GPIO.output(relayPin, GPIO.LOW)
+    relayServer.sendCommand("ON")
     switchOnTs = currentTime()
 
     if source == Source.MANUAL:
@@ -128,7 +128,7 @@ def switchOff():
     global relayPin
     global switchOnTs
 
-    GPIO.output(relayPin, GPIO.HIGH)
+    relayServer.sendCommand("OFF")
     switchOnTs = 0
     sendMessage("OFF")
 
@@ -179,8 +179,7 @@ while True:
     if GPIO.input(PIRPin) == 1:
         if motionSensor == MotionSensorState.TRIGGEREDONCE:
             print("Hareket")
-            #switchOn(Source.MOTION)
-            relayServer.sendCommand("ON")
+            switchOn(Source.MOTION)
         else:
             motionSensor = MotionSensorState.TRIGGEREDONCE
     else:
