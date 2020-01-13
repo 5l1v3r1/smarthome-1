@@ -126,7 +126,7 @@ def switchOn(source):
     global relayPin
     global switchOnTs
     
-    if source == Source.MOTION and switchOnTs > 0 : return
+    #if source == Source.MOTION and switchOnTs > 0 : return
 
     relayServer.sendCommand("ON")
     switchOnTs = currentTime()
