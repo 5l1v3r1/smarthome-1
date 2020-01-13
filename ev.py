@@ -31,7 +31,10 @@ class RelayServer(threading.Thread):
             s.settimeout(0.5)
             s.listen()
             while True:
-                conn, addr = s.accept()
+                try:
+                    conn, addr = s.accept()
+                except socket.timeout:
+                    continue
                 with conn:
                     while True:
                         if len(self._cmdQueue) == 0:
