@@ -28,13 +28,14 @@ class RelayServer(threading.Thread):
         
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.bind(("0.0.0.0", 42024))
-            s.settimeout(0.5)
+            s.settimeout(0.1)
             s.listen()
             while True:
                 try:
                     conn, addr = s.accept()
                 except socket.timeout:
                     continue
+                print("New connection: ", addr)
                 with conn:
                     while True:
                         if len(self._cmdQueue) == 0:
@@ -45,7 +46,7 @@ class RelayServer(threading.Thread):
                             except socket.timeout:
                                 pass
                             except:
-                                print("ping error")
+                                print("Connection closed")
                                 break
                             continue
                         
