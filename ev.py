@@ -28,13 +28,21 @@ class RelayServer(threading.Thread):
         
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.bind(("0.0.0.0", 42024))
+            s.settimeout(0.5)
             s.listen()
             while True:
                 conn, addr = s.accept()
                 with conn:
                     while True:
                         if len(self._cmdQueue) == 0:
-                            time.sleep(0.5)
+                            try:
+                                data = s.recv(256)
+                                if "PING" in data.decode("ascii"):
+                                    s.sendall("PONG\n".encode("ascii"))
+                            except socket.timeout:
+                                pass
+                            except:
+                                print("ping error")
                             continue
                         
                         cmd = self._cmdQueue.pop()
@@ -43,6 +51,8 @@ class RelayServer(threading.Thread):
                         except:
                             self._cmdQueue.insert(0, cmd)
                             break
+                            
+                        
                             
                 conn.close()
                        
