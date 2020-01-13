@@ -106,11 +106,11 @@ def sendVideo():
     os.remove("video.mkv")
     
 def takePhoto():
-    GPIO.output(relayPin, GPIO.LOW)
+    relayServer.sendCommand("ON")
     
     sendPhoto()
     
-    if switchOnTs == 0: GPIO.output(relayPin, GPIO.HIGH)
+    if switchOnTs == 0: relayServer.sendCommand("OFF")
 
 def switchOn(source):
     global relayPin
@@ -189,8 +189,7 @@ while True:
 
     if shouldTurnSwitchOff():
         print("OFF")
-        #switchOff()
-        relayServer.sendCommand("OFF")
+        switchOff()
 
     time.sleep(0.1)
 
