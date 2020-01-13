@@ -169,6 +169,7 @@ relayServer = RelayServer()
 relayServer.start()
 
 msgCnt = 0
+motionSensorEnabled = True
 motionSensor = MotionSensorState.NOTTRIGGERED
 while True:
     if msgCnt == 10:
@@ -187,10 +188,18 @@ while True:
             elif msg.upper() == "PHOTO":
                 print("PHOTO")
                 takePhoto()
+                
+            elif msg.upper() == "MOFF":
+                print("MOFF")
+                motionSensorEnabled = False
+                
+            elif msg.upper() == "MON":
+                print("MON")
+                motionSensorEnabled = True
     else:
         msgCnt += 1
 
-    if GPIO.input(PIRPin) == 1:
+    if motionSensorEnabled and GPIO.input(PIRPin) == 1:
         if motionSensor == MotionSensorState.TRIGGEREDONCE:
             print("Hareket")
             switchOn(Source.MOTION)
