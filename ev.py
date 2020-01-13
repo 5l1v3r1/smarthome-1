@@ -28,14 +28,11 @@ class RelayServer(threading.Thread):
         
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.bind(("0.0.0.0", 42024))
-            s.settimeout(0.1)
             s.listen()
             while True:
-                try:
-                    conn, addr = s.accept()
-                except socket.timeout:
-                    continue
+                conn, addr = s.accept()
                 print("New connection: ", addr)
+                conn.settimeout(0.1)
                 with conn:
                     while True:
                         if len(self._cmdQueue) == 0:
