@@ -36,10 +36,12 @@ class RelayServer(threading.Thread):
                         if len(self._cmdQueue) == 0:
                             time.sleep(0.5)
                             continue
-                            
+                        
+                        cmd = self._cmdQueue.pop()
                         try:
-                            conn.sendall((self._cmdQueue.pop() + "\n").encode("ascii"))
+                            conn.sendall((cmd + "\n").encode("ascii"))
                         except:
+                            self._cmdQueue.insert(0, cmd)
                             break
                             
                 conn.close()
