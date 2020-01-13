@@ -38,6 +38,8 @@ class RelayServer(threading.Thread):
                         if len(self._cmdQueue) == 0:
                             try:
                                 data = conn.recv(256)
+                                while len(data) < 5:
+                                    data += conn.recv(256)
                                 if "PING" in data.decode("ascii"):
                                     conn.sendall("PONG\n".encode("ascii"))
                             except socket.timeout:
