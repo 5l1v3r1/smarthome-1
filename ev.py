@@ -15,7 +15,7 @@ class Source:
 
 class MotionSensorState:
     NOTTRIGGERED  = 0
-    TRIGGEREDONCE = 2
+    TRIGGEREDONCE = 1
     
 class RelayServer(threading.Thread):
 
