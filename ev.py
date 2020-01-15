@@ -192,10 +192,12 @@ while True:
             elif msg.upper() == "MOFF":
                 print("MOFF")
                 motionSensorEnabled = False
+                sendMessage("Done")
                 
             elif msg.upper() == "MON":
                 print("MON")
                 motionSensorEnabled = True
+                sendMessage("Done")
     else:
         msgCnt += 1
 
