@@ -67,9 +67,10 @@ def currentTime():
 
 def sendMessage(msg):
 
-    r = requests.get("{0}{1}/sendMessage?chat_id={2}&text={3}".format(config.telegramURL, config.telegramToken, config.telegramChatId, msg))
-
-    return r.status_code == 200
+    try:
+        r = requests.get("{0}{1}/sendMessage?chat_id={2}&text={3}".format(config.telegramURL, config.telegramToken, config.telegramChatId, msg))
+    except:
+        pass
 
 def getMessages():
     global lastMessageTs
@@ -99,8 +100,10 @@ def sendPhoto():
 
     f = open("shot.jpg", "rb")
 
-    r = requests.post("{0}{1}/sendPhoto".format(config.telegramURL, config.telegramToken), data={"chat_id":config.telegramChatId}, files={"photo":f})
-
+    try:
+        r = requests.post("{0}{1}/sendPhoto".format(config.telegramURL, config.telegramToken), data={"chat_id":config.telegramChatId}, files={"photo":f})
+    except:
+        pass
     f.close()
 
     os.remove("shot.jpg")
@@ -110,8 +113,11 @@ def sendVideo():
     os.system(" ffmpeg -t 10 -f v4l2 -framerate 25 -video_size 640x80 -i /dev/video0 video.mkv")
 
     f = open("video.mkv", "rb")
-
-    r = requests.post("{0}{1}/sendVideo".format(config.telegramURL, config.telegramToken), data={"chat_id":config.telegramChatId}, files={"video":f})
+    
+    try:
+        r = requests.post("{0}{1}/sendVideo".format(config.telegramURL, config.telegramToken), data={"chat_id":config.telegramChatId}, files={"video":f})
+    except:
+        pass
 
     f.close()
 
