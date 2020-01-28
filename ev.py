@@ -80,7 +80,7 @@ class Commander:
 
             time.sleep(0.1)
 
-    def sendPhoto(self):
+    def _sendPhoto(self):
         photoFile = webcam.takePhoto()
 
         f = open(photoFile, "rb")
@@ -92,7 +92,7 @@ class Commander:
         os.remove(photoFile)
 
 
-    def sendVideo(self):
+    def _sendVideo(self):
         videoFile = webcam.shootVideo()
 
         f = open(videoFile, "rb")
@@ -103,14 +103,14 @@ class Commander:
 
         os.remove(videoFile)
 
-    def takePhoto(self):
+    def _takePhoto(self):
         self._relayServer.sendCommand("ON")
 
         self._sendPhoto()
 
         if self._switchOnTs == 0: self._relayServer.sendCommand("OFF")
 
-    def switchOn(self, source):
+    def _switchOn(self, source):
         #if source == Source.MOTION and self._switchOnTs > 0 : return
 
         self._relayServer.sendCommand("ON")
@@ -121,12 +121,12 @@ class Commander:
         elif source == Source.MOTION:
             self._sendVideo()
 
-    def switchOff(self):
+    def _switchOff(self):
         self._relayServer.sendCommand("OFF")
         self._switchOnTs = 0
         self._telegram.sendMessage("OFF")
 
-    def shouldTurnSwitchOff(self):
+    def _shouldTurnSwitchOff(self):
         return self._switchOnTs > 0 and currentTime() - self._switchOnTs > 10 * 60
 
 
