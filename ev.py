@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 
-import requests
 import os
 import time
 
@@ -8,6 +7,7 @@ import config
 import motionSensor
 import relayServer
 import telegram
+import webcam
 
 
 class Source:
@@ -20,29 +20,29 @@ def currentTime():
 def sendPhoto():
     global telegram
 
-    os.system("fswebcam -r 640x480 --jpeg 85 -D 1 shot.jpg")
+    photoFile = webcam.takePhoto()
 
-    f = open("shot.jpg", "rb")
+    f = open(photoFile, "rb")
 
     telegram.sendPhoto(f)
 
     f.close()
 
-    os.remove("shot.jpg")
+    os.remove(photoFile)
     
     
 def sendVideo():
     global telegram
 
-    os.system(" ffmpeg -t 10 -f v4l2 -framerate 25 -video_size 640x80 -i /dev/video0 video.mkv")
+    videoFile = webcam.shootVideo()
 
-    f = open("video.mkv", "rb")
+    f = open(videoFile, "rb")
     
     telegram.sendVideo(f)
 
     f.close()
 
-    os.remove("video.mkv")
+    os.remove(videoFile)
     
 def takePhoto():
     relayServer.sendCommand("ON")
@@ -81,9 +81,6 @@ def shouldTurnSwitchOff():
 
 if __name__ == "__main__":
     switchOnTs = 0
-
-    lastMessageTs = currentTime()
-    lastUpdateId = 0
 
     PIRPin = 4
     motionSensor = motionSensor.MotionSensor(PIRPin)
