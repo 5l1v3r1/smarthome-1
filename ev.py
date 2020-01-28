@@ -5,74 +5,40 @@ import os
 import time
 
 import config
-
 import motionSensor
 import relayServer
+import telegram
 
 
 class Source:
     MOTION = 0
     MANUAL = 1
 
-
-
-    
 def currentTime():
     return int(time.time())
 
-def sendMessage(msg):
-
-    try:
-        r = requests.get("{0}{1}/sendMessage?chat_id={2}&text={3}".format(config.telegramURL, config.telegramToken, config.telegramChatId, msg))
-    except:
-        pass
-
-def getMessages():
-    global lastMessageTs
-    global lastUpdateId
-
-    msgs = []
-
-    try:
-        r = requests.get("{0}{1}/getUpdates?chat_id={2}&offset={3}".format(config.telegramURL, config.telegramToken, config.telegramChatId, lastUpdateId))
-
-        updates = r.json()
-    
-        results = updates["result"]
-    except:
-        return msgs
-
-    for update in results:
-        lastUpdateId = update["update_id"]
-        if update["message"]["date"] > lastMessageTs and 'text' in update["message"]:
-            msgs.append(update["message"]["text"])
-            lastMessageTs = update["message"]["date"]
-
-    return msgs
-
 def sendPhoto():
+    global telegram
+
     os.system("fswebcam -r 640x480 --jpeg 85 -D 1 shot.jpg")
 
     f = open("shot.jpg", "rb")
 
-    try:
-        r = requests.post("{0}{1}/sendPhoto".format(config.telegramURL, config.telegramToken), data={"chat_id":config.telegramChatId}, files={"photo":f})
-    except:
-        pass
+    telegram.sendPhoto(f)
+
     f.close()
 
     os.remove("shot.jpg")
     
     
 def sendVideo():
+    global telegram
+
     os.system(" ffmpeg -t 10 -f v4l2 -framerate 25 -video_size 640x80 -i /dev/video0 video.mkv")
 
     f = open("video.mkv", "rb")
     
-    try:
-        r = requests.post("{0}{1}/sendVideo".format(config.telegramURL, config.telegramToken), data={"chat_id":config.telegramChatId}, files={"video":f})
-    except:
-        pass
+    telegram.sendVideo(f)
 
     f.close()
 
@@ -100,12 +66,12 @@ def switchOn(source):
         sendVideo()
 
 def switchOff():
-    global relayPin
+    global telegram
     global switchOnTs
 
     relayServer.sendCommand("OFF")
     switchOnTs = 0
-    sendMessage("OFF")
+    telegram.sendMessage("OFF")
 
 def shouldTurnSwitchOff():
     global switchOnTs
@@ -125,11 +91,13 @@ if __name__ == "__main__":
     relayServer = relayServer.RelayServer()
     relayServer.start()
 
+    telegram = telegram.Telegram(config.telegramURL, config.telegramToken, config.telegramToken)
+
     msgCnt = 0
     while True:
         if msgCnt == 10:
             msgCnt = 0
-            msgs = getMessages()
+            msgs = telegram.getMessages()
 
             for msg in msgs:
                 if msg.upper() == "ON":
@@ -146,13 +114,13 @@ if __name__ == "__main__":
 
                 elif msg.upper() == "MOFF":
                     print("MOFF")
-                    motionSensorEnabled = False
-                    sendMessage("Done")
+                    motionSensor.disable()
+                    telegram.sendMessage("Done")
 
                 elif msg.upper() == "MON":
                     print("MON")
-                    motionSensorEnabled = True
-                    sendMessage("Done")
+                    motionSensor.enable()
+                    telegram.sendMessage("Done")
         else:
             msgCnt += 1
 
