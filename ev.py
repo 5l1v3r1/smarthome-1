@@ -1,66 +1,21 @@
 #!/usr/bin/python3
 
-import RPi.GPIO as GPIO
 import requests
 import os
-import socket
-import threading
 import time
 
 import config
+
+import motionSensor
+import relayServer
+
 
 class Source:
     MOTION = 0
     MANUAL = 1
 
-class MotionSensorState:
-    NOTTRIGGERED  = 0
-    TRIGGEREDONCE = 1
-    
-class RelayServer(threading.Thread):
 
-    def __init__(self):
-        threading.Thread.__init__(self)
-        
-        self._cmdQueue = []
-        
-    def run(self):
-        
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.bind(("0.0.0.0", 42024))
-            s.listen()
-            while True:
-                conn, addr = s.accept()
-                print("New connection: ", addr)
-                conn.settimeout(0.1)
-                with conn:
-                    while True:
-                        if len(self._cmdQueue) == 0:
-                            try:
-                                data = conn.recv(256)
-                                while len(data) < 5:
-                                    data += conn.recv(256)
-                                if "PING" in data.decode("ascii"):
-                                    conn.sendall("PONG\n".encode("ascii"))
-                            except socket.timeout:
-                                pass
-                            except:
-                                print("Connection closed")
-                                break
-                            continue
-                        
-                        cmd = self._cmdQueue.pop()
-                        try:
-                            conn.sendall((cmd + "\n").encode("ascii"))
-                        except:
-                            self._cmdQueue.insert(0, cmd)
-                            break
-                            
-                    conn.close()
-                       
-        
-    def sendCommand(self, cmd):
-        self._cmdQueue.append(cmd)
+
     
 def currentTime():
     return int(time.time())
@@ -158,67 +113,56 @@ def shouldTurnSwitchOff():
     return switchOnTs > 0 and currentTime() - switchOnTs > 10 * 60
 
 
-# KODUN BASLANGICI
-switchOnTs = 0
+if __name__ == "__main__":
+    switchOnTs = 0
 
-lastMessageTs = currentTime()
-lastUpdateId = 0
-GPIO.setmode(GPIO.BCM)
-GPIO.setwarnings(False) # Birden fazla setup cagirdiginda uyari gostermesin diye
-relayPin = 2
-PIRPin = 4
-GPIO.setup(relayPin, GPIO.OUT)
-GPIO.setup(PIRPin, GPIO.IN,  pull_up_down=GPIO.PUD_DOWN)
-GPIO.output(relayPin, GPIO.HIGH)
+    lastMessageTs = currentTime()
+    lastUpdateId = 0
 
-relayServer = RelayServer()
-relayServer.start()
+    PIRPin = 4
+    motionSensor = motionSensor.MotionSensor(PIRPin)
 
-msgCnt = 0
-motionSensorEnabled = True
-motionSensor = MotionSensorState.NOTTRIGGERED
-while True:
-    if msgCnt == 10:
-        msgCnt = 0
-        msgs = getMessages()
+    relayServer = relayServer.RelayServer()
+    relayServer.start()
 
-        for msg in msgs:
-            if msg.upper() == "ON":
-                print("ON")
-                switchOn(Source.MANUAL)
+    msgCnt = 0
+    while True:
+        if msgCnt == 10:
+            msgCnt = 0
+            msgs = getMessages()
 
-            elif msg.upper() == "OFF":
-                print("OFF")
-                switchOff()
-                
-            elif msg.upper() == "PHOTO":
-                print("PHOTO")
-                takePhoto()
-                
-            elif msg.upper() == "MOFF":
-                print("MOFF")
-                motionSensorEnabled = False
-                sendMessage("Done")
-                
-            elif msg.upper() == "MON":
-                print("MON")
-                motionSensorEnabled = True
-                sendMessage("Done")
-    else:
-        msgCnt += 1
+            for msg in msgs:
+                if msg.upper() == "ON":
+                    print("ON")
+                    switchOn(Source.MANUAL)
 
-    if motionSensorEnabled and GPIO.input(PIRPin) == 1:
-        if motionSensor == MotionSensorState.TRIGGEREDONCE:
+                elif msg.upper() == "OFF":
+                    print("OFF")
+                    switchOff()
+
+                elif msg.upper() == "PHOTO":
+                    print("PHOTO")
+                    takePhoto()
+
+                elif msg.upper() == "MOFF":
+                    print("MOFF")
+                    motionSensorEnabled = False
+                    sendMessage("Done")
+
+                elif msg.upper() == "MON":
+                    print("MON")
+                    motionSensorEnabled = True
+                    sendMessage("Done")
+        else:
+            msgCnt += 1
+
+        if motionSensor.triggered():
             print("Hareket")
             switchOn(Source.MOTION)
-        else:
-            motionSensor = MotionSensorState.TRIGGEREDONCE
-    else:
-        motionSensor = MotionSensorState.NOTTRIGGERED
 
-    if shouldTurnSwitchOff():
-        print("OFF")
-        switchOff()
+        if shouldTurnSwitchOff():
+            print("OFF")
+            switchOff()
 
-    time.sleep(0.1)
+        time.sleep(0.1)
 
