@@ -17,117 +17,121 @@ class Source:
 def currentTime():
     return int(time.time())
 
-def sendPhoto():
-    global telegram
+class Command:
+    RELAY_ON              = "ON"
+    RELAY_OFF             = "OFF"
+    TAKE_PHOTO            = "PHOTO"
+    DISABLE_MOTION_SENSOR = "MOFF"
+    ENABLE_MOTION_SENSOR  = "MON"
 
-    photoFile = webcam.takePhoto()
 
-    f = open(photoFile, "rb")
+class Commander:
 
-    telegram.sendPhoto(f)
+    def __init__(self):
+        PIRPin = 4
 
-    f.close()
+        self._telegram = telegram.Telegram(config.telegramURL, config.telegramToken, config.telegramChatId)
+        self._motionServer = motionSensor.MotionSensor(PIRPin)
+        self._relayServer = relayServer.RelayServer()
 
-    os.remove(photoFile)
-    
-    
-def sendVideo():
-    global telegram
+        self._switchOnTs = 0
 
-    videoFile = webcam.shootVideo()
+    def start(self):
+        self._relayServer.start()
 
-    f = open(videoFile, "rb")
-    
-    telegram.sendVideo(f)
+        msgCnt = 0
+        while True:
+            if msgCnt == 10:
+                msgCnt = 0
+                msgs = self._telegram.getMessages()
 
-    f.close()
+                for msg in msgs:
+                    if msg == Command.RELAY_ON:
+                        print("ON")
+                        self._switchOn(Source.MANUAL)
 
-    os.remove(videoFile)
-    
-def takePhoto():
-    relayServer.sendCommand("ON")
-    
-    sendPhoto()
-    
-    if switchOnTs == 0: relayServer.sendCommand("OFF")
+                    elif msg == Command.RELAY_OFF:
+                        print("OFF")
+                        self._switchOff()
 
-def switchOn(source):
-    global relayPin
-    global switchOnTs
-    
-    #if source == Source.MOTION and switchOnTs > 0 : return
+                    elif msg == Command.TAKE_PHOTO:
+                        print("PHOTO")
+                        self._takePhoto()
 
-    relayServer.sendCommand("ON")
-    switchOnTs = currentTime()
+                    elif msg == Command.DISABLE_MOTION_SENSOR:
+                        print("MOFF")
+                        self._motionSensor.disable()
+                        self._telegram.sendMessage("Done")
 
-    if source == Source.MANUAL:
-        sendPhoto()
-    elif source == Source.MOTION:
-        sendVideo()
+                    elif msg == Command.ENABLE_MOTION_SENSOR:
+                        print("MON")
+                        self._motionSensor.enable()
+                        self._telegram.sendMessage("Done")
+            else:
+                msgCnt += 1
 
-def switchOff():
-    global telegram
-    global switchOnTs
+            if self._motionSensor.triggered():
+                print("Hareket")
+                self._switchOn(Source.MOTION)
 
-    relayServer.sendCommand("OFF")
-    switchOnTs = 0
-    telegram.sendMessage("OFF")
+            if self._shouldTurnSwitchOff():
+                print("OFF")
+                self._switchOff()
 
-def shouldTurnSwitchOff():
-    global switchOnTs
+            time.sleep(0.1)
 
-    return switchOnTs > 0 and currentTime() - switchOnTs > 10 * 60
+    def sendPhoto(self):
+        photoFile = webcam.takePhoto()
+
+        f = open(photoFile, "rb")
+
+        self._telegram.sendPhoto(f)
+
+        f.close()
+
+        os.remove(photoFile)
+
+
+    def sendVideo(self):
+        videoFile = webcam.shootVideo()
+
+        f = open(videoFile, "rb")
+
+        self._telegram.sendVideo(f)
+
+        f.close()
+
+        os.remove(videoFile)
+
+    def takePhoto(self):
+        self._relayServer.sendCommand("ON")
+
+        self._sendPhoto()
+
+        if self._switchOnTs == 0: self._relayServer.sendCommand("OFF")
+
+    def switchOn(self, source):
+        #if source == Source.MOTION and self._switchOnTs > 0 : return
+
+        self._relayServer.sendCommand("ON")
+        self._switchOnTs = currentTime()
+
+        if source == Source.MANUAL:
+            self._sendPhoto()
+        elif source == Source.MOTION:
+            self._sendVideo()
+
+    def switchOff(self):
+        self._relayServer.sendCommand("OFF")
+        self._switchOnTs = 0
+        self._telegram.sendMessage("OFF")
+
+    def shouldTurnSwitchOff(self):
+        return self._switchOnTs > 0 and currentTime() - self._switchOnTs > 10 * 60
 
 
 if __name__ == "__main__":
-    switchOnTs = 0
 
-    PIRPin = 4
-    motionSensor = motionSensor.MotionSensor(PIRPin)
-
-    relayServer = relayServer.RelayServer()
-    relayServer.start()
-
-    telegram = telegram.Telegram(config.telegramURL, config.telegramToken, config.telegramChatId)
-
-    msgCnt = 0
-    while True:
-        if msgCnt == 10:
-            msgCnt = 0
-            msgs = telegram.getMessages()
-
-            for msg in msgs:
-                if msg.upper() == "ON":
-                    print("ON")
-                    switchOn(Source.MANUAL)
-
-                elif msg.upper() == "OFF":
-                    print("OFF")
-                    switchOff()
-
-                elif msg.upper() == "PHOTO":
-                    print("PHOTO")
-                    takePhoto()
-
-                elif msg.upper() == "MOFF":
-                    print("MOFF")
-                    motionSensor.disable()
-                    telegram.sendMessage("Done")
-
-                elif msg.upper() == "MON":
-                    print("MON")
-                    motionSensor.enable()
-                    telegram.sendMessage("Done")
-        else:
-            msgCnt += 1
-
-        if motionSensor.triggered():
-            print("Hareket")
-            switchOn(Source.MOTION)
-
-        if shouldTurnSwitchOff():
-            print("OFF")
-            switchOff()
-
-        time.sleep(0.1)
+    commander = Commander()
+    commander.start()
 
