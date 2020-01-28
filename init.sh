@@ -8,7 +8,6 @@ while [ true ]; do
 		break
 	fi
 
-	echo "here"	
 	sleep 1
 done
 
