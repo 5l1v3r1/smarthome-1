@@ -31,7 +31,7 @@ class Commander:
         PIRPin = 4
 
         self._telegram = telegram.Telegram(config.telegramURL, config.telegramToken, config.telegramChatId)
-        self._motionServer = motionSensor.MotionSensor(PIRPin)
+        self._motionSensor = motionSensor.MotionSensor(PIRPin)
         self._relayServer = relayServer.RelayServer()
 
         self._switchOnTs = 0
