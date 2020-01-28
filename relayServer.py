@@ -1,5 +1,5 @@
 import threading
-from socket import socket
+import socket
 
 
 class RelayServer(threading.Thread):
