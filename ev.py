@@ -91,7 +91,7 @@ if __name__ == "__main__":
     relayServer = relayServer.RelayServer()
     relayServer.start()
 
-    telegram = telegram.Telegram(config.telegramURL, config.telegramToken, config.telegramToken)
+    telegram = telegram.Telegram(config.telegramURL, config.telegramToken, config.telegramChatId)
 
     msgCnt = 0
     while True:
