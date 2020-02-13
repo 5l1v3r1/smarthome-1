@@ -1,4 +1,5 @@
 import threading
+import time
 import socket
 
 class WifiCam(threading.Thread):
