@@ -31,31 +31,35 @@ class WifiCam(threading.Thread):
                             try:
                                 cmd = conn.recv(1)
 
-                                if cmd == WifiCam.PING_CMD:
-                                    conn.sendall(WifiCam.PONG_CMD)
-                                elif cmd == WifiCam.PHOTO_CMD:
-                                    data = conn.recv(4)
-                                    while len(data) < 4:
-                                        data += conn.recv(4-len(data))
 
-                                    pLen = (data[0] << 24) + (data[1] << 16) + (data[2] << 8) + data[3]
-
-                                    data = conn.recv(pLen)
-                                    while len(data) < pLen:
-                                        data += conn.recv(pLen-len(data))
-
-                                    self._photoQueue.append(data)
                             except socket.timeout:
-                                pass
+                                continue
                             except:
                                 print("Connection closed")
                                 break
+
+                            if cmd == WifiCam.PING_CMD:
+                                conn.sendall(WifiCam.PONG_CMD)
+                            elif cmd == WifiCam.PHOTO_CMD:
+                                conn.settimeout(0)
+                                data = conn.recv(4)
+                                while len(data) < 4:
+                                    data += conn.recv(4 - len(data))
+
+                                pLen = (data[0] << 24) | (data[1] << 16) | (data[2] << 8) | data[3]
+
+                                data = conn.recv(pLen)
+                                while len(data) < pLen:
+                                    data += conn.recv(pLen - len(data))
+
+                                conn.settimeout(0.1)
+                                self._photoQueue.append(data)
 
                             continue
 
                         cmd = self._cmdQueue.pop()
                         try:
-                            conn.sendall((cmd))
+                            conn.sendall(cmd)
                         except:
                             self._cmdQueue.insert(0, cmd)
                             break
