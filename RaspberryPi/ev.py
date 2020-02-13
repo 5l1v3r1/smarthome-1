@@ -8,6 +8,7 @@ import motionSensor
 import relayServer
 import telegram
 import webcam
+import wificam
 
 
 class Source:
@@ -31,13 +32,15 @@ class Commander:
         PIRPin = 4
 
         self._telegram = telegram.Telegram(config.telegramURL, config.telegramToken, config.telegramChatId)
-        self._motionSensor = motionSensor.MotionSensor(PIRPin)
+        #self._motionSensor = motionSensor.MotionSensor(PIRPin)
         self._relayServer = relayServer.RelayServer()
+        self._wifiCam = wificam.WifiCam()
 
         self._switchOnTs = 0
 
     def start(self):
         self._relayServer.start()
+        self._wifiCam.start()
 
         msgCnt = 0
         while True:
@@ -70,9 +73,9 @@ class Commander:
             else:
                 msgCnt += 1
 
-            if self._motionSensor.triggered():
-                print("Hareket")
-                self._switchOn(Source.MOTION)
+            #if self._motionSensor.triggered():
+            #    print("Hareket")
+            #    self._switchOn(Source.MOTION)
 
             if self._shouldTurnSwitchOff():
                 print("OFF")
@@ -80,16 +83,21 @@ class Commander:
 
             time.sleep(0.1)
 
+    #def _sendPhoto(self):
+    #   photoFile = webcam.takePhoto()
+
+    #   f = open(photoFile, "rb")
+
+    #   self._telegram.sendPhoto(f)
+
+    #   f.close()
+
+    #    os.remove(photoFile)
+
     def _sendPhoto(self):
-        photoFile = webcam.takePhoto()
+        photo = self._wifiCam.takePhoto()
 
-        f = open(photoFile, "rb")
-
-        self._telegram.sendPhoto(f)
-
-        f.close()
-
-        os.remove(photoFile)
+        self._telegram.sendPhoto(photo)
 
 
     def _sendVideo(self):
