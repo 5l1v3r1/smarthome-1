@@ -46,15 +46,16 @@ class WifiCam(threading.Thread):
 
                                     self._photoQueue.append(data)
                             except socket.timeout:
-                                continue
+                                pass
                             except:
                                 print("Connection closed")
                                 break
+
                             continue
 
                         cmd = self._cmdQueue.pop()
                         try:
-                            conn.sendall((cmd + "\n").encode("ascii"))
+                            conn.sendall((cmd))
                         except:
                             self._cmdQueue.insert(0, cmd)
                             break
