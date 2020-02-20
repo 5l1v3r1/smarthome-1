@@ -67,7 +67,6 @@ class WifiCam(threading.Thread):
                                         while len(data) < pLen:
                                             data += conn.recv(pLen - len(data))
 
-                                        data = conn.recv()
                                         self._frameQueue.append(data)
 
                                     self._frameQueue.append("END")
