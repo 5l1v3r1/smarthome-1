@@ -120,12 +120,10 @@ class WifiCam(threading.Thread):
                 break
 
             f = open("frames/frame{0:04d}.jpg".format(frameId), "w")
-            f.write(data)
+            f.write(frame)
             f.close()
 
             frameId+=1
-
-
 
         '''
         os.system("ffmpeg -r 20 -f ")
