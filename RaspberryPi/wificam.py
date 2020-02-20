@@ -125,17 +125,9 @@ class WifiCam(threading.Thread):
 
         frameRate = int(frameId / 10)
 
-        os.system("ffmpeg -r {0} -start_number 0 -i 'frames/frame%04d.jpg' -c:v libx264 -r 30 -pix_fmt yuv420p frames/video.mp4 > video.log 2>&1".format(frameRate))
-
-        f = open("frames/video.mp4")
-        video = f.read()
-        f.close()
-
         for i in range(frameId):
             os.remove("frames/frame{0:04d}.jpg".format(i))
 
-        os.remove("frames/video.mp4")
-        
 
         return video
 

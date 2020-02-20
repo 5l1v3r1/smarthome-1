@@ -94,13 +94,11 @@ class Commander:
         os.remove(videoFile)
 
     def _takePhoto(self):
-        #self._relayServer.sendCommand("ON")
+        self._relayServer.sendCommand("ON")
 
-        #self._sendPhoto()
-        video = self._wifiCam.record()
+        self._sendPhoto()
 
-        self._telegram.sendVideo(video)
-        #if self._switchOnTs == 0: self._relayServer.sendCommand("OFF")
+        if self._switchOnTs == 0: self._relayServer.sendCommand("OFF")
 
     def _switchOn(self, source):
         #if source == Source.MOTION and self._switchOnTs > 0 : return

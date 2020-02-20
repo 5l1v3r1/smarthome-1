@@ -7,6 +7,8 @@
 #define WIFI_SSID     "Kablonet Netmaster-CA0B-G"
 #define WIFI_PASSWORD "ce1a5f35"
 
+#define RECORD_TIME 10 //10s
+
 #define COMM_RETRY_WAIT 500
 #define COMM_RETRY_LIMIT 5
 #define PING_TIMEOUT 5000
@@ -39,6 +41,8 @@ WiFiClient client;
 unsigned int nc = 0;
 unsigned long pingTimer = 0;
 unsigned long lastPing = 0;
+
+bool connectedToPi = false;
 
 void connectWiFi() {
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
@@ -117,18 +121,56 @@ void takePhotoAndSend() {
 
   client.write(PHOTO_CMD);
 
-  client.write((uint8_t) ((fb->len & 0xff000000) >> 24));
-  client.write((uint8_t) ((fb->len & 0x00ff0000) >> 16));
-  client.write((uint8_t) ((fb->len & 0x0000ff00) >> 8));
-  client.write((uint8_t) (fb->len & 0x000000ff));  
+  client.write((uint8_t) ((fb->len >> 24) & 0xff));
+  client.write((uint8_t) ((fb->len >> 16) & 0xff));
+  client.write((uint8_t) ((fb->len >> 8) & 0xff ));
+  client.write((uint8_t) (fb->len & 0xff));  
 
+  Serial.println("Sending photo");
   client.write(fb->buf, fb->len);
+  Serial.println("Photo sent");
+  Serial.println(fb->len);
+
+  esp_camera_fb_return(fb);
+  
+}
+
+
+void recordAndSend() {
+  unsigned long startTime = millis();
+
+  client.write(VIDEO_CMD);
+
+  while (millis() - startTime < RECORD_TIME * 1000) {
+    camera_fb_t * fb = NULL;
+  
+    fb = esp_camera_fb_get();  
+    if(!fb) {
+      Serial.println("Camera capture failed");
+      return;
+    }
+  
+    client.write((uint8_t) ((fb->len >> 24) & 0xff));
+    client.write((uint8_t) ((fb->len >> 16) & 0xff));
+    client.write((uint8_t) ((fb->len >> 8) & 0xff ));
+    client.write((uint8_t) (fb->len & 0xff));  
+  
+    client.write(fb->buf, fb->len);
+    
+    esp_camera_fb_return(fb);
+    
+  }
+
+  client.write((uint8_t) 0x00);
+  client.write((uint8_t) 0x00);
+  client.write((uint8_t) 0x00);
+  client.write((uint8_t) 0x00);
 }
 
 void loop() {
   if (WiFi.status() != WL_CONNECTED) connectWiFi();
 
-  if (!client && !client.connect("192.168.0.12", 42025)) {
+  if (!connectedToPi && !client.connect("192.168.0.12", 42025)) {
       Serial.println("Connection failed");
       nc++;
       if (nc > COMM_RETRY_LIMIT) {
@@ -139,6 +181,7 @@ void loop() {
       return;
   }
   nc = 0;
+  connectedToPi = true;
   
   bool dataReceived = false;
   uint8_t buffer[1];
@@ -148,11 +191,18 @@ void loop() {
       if (n == 1) {
         switch(buffer[0]) {
           case PONG_CMD:
+            Serial.println("PONG");
             pingTimer=0;
             break;
+            
           case PHOTO_CMD:
             Serial.println("PHOTO");
             takePhotoAndSend();
+            break;
+
+          case VIDEO_CMD:
+            Serial.println("VIDEO");
+            recordAndSend();
             break;
         }
       }
@@ -166,6 +216,7 @@ void loop() {
   } else if (pingTimer > 0 && !dataReceived && (millis() - pingTimer) > PING_TIMEOUT) {
     Serial.println("Connection is not alive!");
     pingTimer = 0;
+    connectedToPi = false;
     client.stop();
   }
 
