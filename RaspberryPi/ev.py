@@ -112,11 +112,11 @@ class Commander:
         os.remove(videoFile)
 
     def _takePhoto(self):
-        self._relayServer.sendCommand("ON")
+        #self._relayServer.sendCommand("ON")
 
         self._sendPhoto()
 
-        if self._switchOnTs == 0: self._relayServer.sendCommand("OFF")
+        #if self._switchOnTs == 0: self._relayServer.sendCommand("OFF")
 
     def _switchOn(self, source):
         #if source == Source.MOTION and self._switchOnTs > 0 : return
@@ -124,9 +124,7 @@ class Commander:
         self._relayServer.sendCommand("ON")
         self._switchOnTs = currentTime()
 
-        if source == Source.MANUAL:
-            self._sendPhoto()
-        elif source == Source.MOTION:
+        if source == Source.MOTION:
             self._sendVideo()
 
     def _switchOff(self):
