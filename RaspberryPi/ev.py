@@ -29,10 +29,7 @@ class Command:
 class Commander:
 
     def __init__(self):
-        PIRPin = 4
-
         self._telegram = telegram.Telegram(config.telegramURL, config.telegramToken, config.telegramChatId)
-        #self._motionSensor = motionSensor.MotionSensor(PIRPin)
         self._relayServer = relayServer.RelayServer()
         self._wifiCam = wificam.WifiCam()
 
@@ -73,26 +70,11 @@ class Commander:
             else:
                 msgCnt += 1
 
-            #if self._motionSensor.triggered():
-            #    print("Hareket")
-            #    self._switchOn(Source.MOTION)
-
             if self._shouldTurnSwitchOff():
                 print("OFF")
                 self._switchOff()
 
             time.sleep(0.1)
-
-    #def _sendPhoto(self):
-    #   photoFile = webcam.takePhoto()
-
-    #   f = open(photoFile, "rb")
-
-    #   self._telegram.sendPhoto(f)
-
-    #   f.close()
-
-    #    os.remove(photoFile)
 
     def _sendPhoto(self):
         photo = self._wifiCam.takePhoto()
@@ -114,7 +96,8 @@ class Commander:
     def _takePhoto(self):
         #self._relayServer.sendCommand("ON")
 
-        self._sendPhoto()
+        #self._sendPhoto()
+        self._wifiCam.record()
 
         #if self._switchOnTs == 0: self._relayServer.sendCommand("OFF")
 

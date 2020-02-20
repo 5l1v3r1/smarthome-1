@@ -1,3 +1,4 @@
+import os
 import threading
 import time
 import socket
@@ -15,6 +16,7 @@ class WifiCam(threading.Thread):
 
         self._cmdQueue = []
         self._photoQueue = []
+        self._frameQueue = []
 
     def run(self):
 
@@ -48,6 +50,27 @@ class WifiCam(threading.Thread):
 
                                     conn.settimeout(0.1)
                                     self._photoQueue.append(data)
+                                elif cmd == WifiCam.VIDEO_CMD:
+                                    conn.settimeout(None)
+
+                                    while True:
+                                        data = conn.recv(4)
+                                        while len(data) < 4:
+                                            data += conn.recv(4 - len(data))
+
+                                        pLen = (data[0] << 24) | (data[1] << 16) | (data[2] << 8) | data[3]
+
+                                        if pLen == 0:
+                                            break
+                                        data = conn.recv(pLen)
+                                        while len(data) < pLen:
+                                            data += conn.recv(pLen - len(data))
+
+                                        self._frameQueue.append(data)
+
+                                    self._frameQueue.append("END")
+
+                                    conn.settimeout(0.1)
                             except socket.timeout:
                                 continue
                             except:
@@ -78,6 +101,44 @@ class WifiCam(threading.Thread):
                 continue
 
             return self._photoQueue.pop()
+
+    def record(self):
+        self.sendCommand(WifiCam.VIDEO_CMD)
+
+        while True:
+            if len(self._frameQueue) == 0:
+                time.sleep(0.1)
+                continue
+
+            break
+
+        frameId = 0
+        while True:
+            frame = self._frameQueue.pop()
+
+            if frame == "END":
+                break
+
+            f = open("frames/frame{0:04d}.jpg".format(frameId), "w")
+            f.write(data)
+            f.close()
+
+            frameId+=1
+
+
+
+        '''
+        os.system("ffmpeg -r 20 -f ")
+
+        for i in range(frameId):
+            os.remove("frames/frame{0:04d}.jpg".format(i))
+
+        os.remove("video.mkv")
+        
+        '''
+        return True
+
+
 
 
 
