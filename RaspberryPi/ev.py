@@ -97,8 +97,9 @@ class Commander:
         #self._relayServer.sendCommand("ON")
 
         #self._sendPhoto()
-        self._wifiCam.record()
+        video = self._wifiCam.record()
 
+        self._telegram.sendVideo(video)
         #if self._switchOnTs == 0: self._relayServer.sendCommand("OFF")
 
     def _switchOn(self, source):

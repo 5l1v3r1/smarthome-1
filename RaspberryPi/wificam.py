@@ -62,10 +62,12 @@ class WifiCam(threading.Thread):
 
                                         if pLen == 0:
                                             break
+
                                         data = conn.recv(pLen)
                                         while len(data) < pLen:
                                             data += conn.recv(pLen - len(data))
 
+                                        data = conn.recv()
                                         self._frameQueue.append(data)
 
                                     self._frameQueue.append("END")
@@ -110,7 +112,7 @@ class WifiCam(threading.Thread):
             if len(self._frameQueue) == 0:
                 time.sleep(0.1)
                 continue
-                
+
             frame = self._frameQueue.pop()
 
             if frame == "END":
@@ -122,16 +124,21 @@ class WifiCam(threading.Thread):
 
             frameId+=1
 
-        '''
-        os.system("ffmpeg -r 20 -f ")
+        frameRate = int(frameId / 10)
+
+        os.system("ffmpeg -r {0} -start_number 0 -i 'frames/frame%04d.jpg' -c:v libx264 -r 30 -pix_fmt yuv420p frames/video.mp4 > video.log 2>&1")
+
+        f = open("frames/video.mp4")
+        video = f.read()
+        f.close()
 
         for i in range(frameId):
             os.remove("frames/frame{0:04d}.jpg".format(i))
 
-        os.remove("video.mkv")
+        os.remove("frames/video.mp4")
         
-        '''
-        return True
+
+        return video
 
 
 
