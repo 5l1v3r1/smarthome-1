@@ -105,15 +105,12 @@ class WifiCam(threading.Thread):
     def record(self):
         self.sendCommand(WifiCam.VIDEO_CMD)
 
+        frameId = 0
         while True:
             if len(self._frameQueue) == 0:
                 time.sleep(0.1)
                 continue
-
-            break
-
-        frameId = 0
-        while True:
+                
             frame = self._frameQueue.pop()
 
             if frame == "END":
