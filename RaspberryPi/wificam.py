@@ -119,7 +119,7 @@ class WifiCam(threading.Thread):
             if frame == "END":
                 break
 
-            f = open("frames/frame{0:04d}.jpg".format(frameId), "w")
+            f = open("frames/frame{0:04d}.jpg".format(frameId), "wb")
             f.write(frame)
             f.close()
 
