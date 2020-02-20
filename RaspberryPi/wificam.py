@@ -19,6 +19,7 @@ class WifiCam(threading.Thread):
     def run(self):
 
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, True)
             s.bind(("0.0.0.0", 42025))
             s.listen()
             while True:
