@@ -124,7 +124,7 @@ class WifiCam(threading.Thread):
             frameId+=1
 
         frameRate = int(frameId / 10)
-        os.system("ffmpeg -t 10 -i frames/frame%04d.jpg -c:v libx264 -vf scale=640x480 frames/video.mp4")
+        os.system("ffmpeg -r {0} -t 9 -i frames/frame%04d.jpg -c:v mpeg4 -vf scale=160x120 frames/video.mp4")
 
         f = open("frames/video.mp4", "rb")
         video = f.read()
