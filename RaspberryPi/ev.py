@@ -90,7 +90,7 @@ class Commander:
     def _sendVideo(self):
         video = self._wifiCam.record()
 
-        self._telegram.sendAnimation(video)
+        self._telegram.sendVideo(video)
 
     def _takePhoto(self):
         self._relayServer.sendCommand("ON")
