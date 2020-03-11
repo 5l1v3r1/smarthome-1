@@ -138,7 +138,7 @@ class WifiCam(threading.Thread):
 
             if frameId == 25 and not convStarted:
                 os.system("ffmpeg -y -r 5 -t 9 -i frames/frame%04d.jpg -c:v mpeg4 -vf scale=320x240 frames/video.mp4 &")
-                convStarted
+                convStarted = True
 
         if convStarted:
             while True:
