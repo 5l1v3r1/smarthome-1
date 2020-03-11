@@ -128,7 +128,7 @@ class WifiCam(threading.Thread):
                 os.system("ffmpeg -y -r 5 -t 9 -i frames/frame%04d.jpg -c:v mpeg4 -vf scale=320x240 frames/video.mp4 &")
 
         while True:
-            process = subprocess.Popen("ps aux | grep ffmpeg | grep -v grep", stdout=subprocess.PIPE)
+            process = subprocess.Popen("ps aux | grep ffmpeg | grep -v grep", shell=True; stdout=subprocess.PIPE)
             result = process.communicate()[0]
 
             if result == "": break
