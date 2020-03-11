@@ -134,7 +134,6 @@ class WifiCam(threading.Thread):
             if result.strip() == b"": break
 
             time.sleep(0.2)
-            print("result: ", result)
 
         f = open("frames/video.mp4", "rb")
         video = f.read()
