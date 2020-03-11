@@ -40,16 +40,23 @@ class Telegram:
         except:
             pass
 
-    def sendVideo(self, videoFd):
+    def sendVideo(self, video):
         try:
             requests.post("{0}{1}/sendVideo".format(self._url, self._token),
-                              data={"chat_id": self._chatId}, files={"video": videoFd})
+                              data={"chat_id": self._chatId}, files={"video": video})
         except:
             pass
 
-    def sendPhoto(self, photoFd):
+    def sendAnimation(self, anim):
+        try:
+            requests.post("{0}{1}/sendAnimation".format(self._url, self._token),
+                              data={"chat_id": self._chatId}, files={"animation": anim})
+        except:
+            pass
+
+    def sendPhoto(self, photo):
         try:
             requests.post("{0}{1}/sendPhoto".format(self._url, self._token),
-                              data={"chat_id": self._chatId}, files={"photo": photoFd})
+                              data={"chat_id": self._chatId}, files={"photo": photo})
         except:
             pass

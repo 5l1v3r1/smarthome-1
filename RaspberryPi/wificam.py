@@ -123,8 +123,8 @@ class WifiCam(threading.Thread):
 
             frameId+=1
 
-        #frameRate = int(frameId / 10)
-        os.system("ffmpeg -i frames/frame%04d.jpg frames/video.gif")
+        frameRate = int(frameId / 10)
+        os.system("ffmpeg -t 6 -i frames/frame%04d.jpg -vf 320x640 frames/video.gif")
 
         f = open("frames/video.gif", "rb")
         video = f.read()
