@@ -108,6 +108,8 @@ class WifiCam(threading.Thread):
         self.sendCommand(WifiCam.VIDEO_CMD)
 
         frameId = 0
+        startTime = time.time()
+        convStarted = False
         while True:
             if len(self._frameQueue) == 0:
                 time.sleep(0.1)
@@ -124,16 +126,30 @@ class WifiCam(threading.Thread):
 
             frameId+=1
 
-            if frameId == 25:
+            if frameId == 15:
+                totalTime = time.time() - startTime
+                rate = 15 / totalTime
+
+                if rate < 3:
+                    os.system(
+                        "ffmpeg -y -r 5 -t 9 -i frames/frame%04d.jpg -c:v mpeg4 -vf scale=320x240 frames/video.mp4 &")
+                    convStarted = True
+
+
+            if frameId == 25 and not convStarted:
                 os.system("ffmpeg -y -r 5 -t 9 -i frames/frame%04d.jpg -c:v mpeg4 -vf scale=320x240 frames/video.mp4 &")
+                convStarted
 
-        while True:
-            process = subprocess.Popen("ps aux | grep ffmpeg | grep -v grep", shell=True, stdout=subprocess.PIPE)
-            result = process.communicate()[0]
+        if convStarted:
+            while True:
+                process = subprocess.Popen("ps aux | grep ffmpeg | grep -v grep", shell=True, stdout=subprocess.PIPE)
+                result = process.communicate()[0]
 
-            if result.strip() == b"": break
+                if result.strip() == b"": break
 
-            time.sleep(0.2)
+                time.sleep(0.2)
+        else:
+            os.system("ffmpeg -y -r 5 -t 9 -i frames/frame%04d.jpg -c:v mpeg4 -vf scale=320x240 frames/video.mp4")
 
         f = open("frames/video.mp4", "rb")
         video = f.read()
