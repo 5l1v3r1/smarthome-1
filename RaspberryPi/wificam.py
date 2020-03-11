@@ -133,7 +133,7 @@ class WifiCam(threading.Thread):
         for i in range(frameId):
             os.remove("frames/frame{0:04d}.jpg".format(i))
 
-        os.remove("frames/video.gif")
+        os.remove("frames/video.mp4")
 
         return video
 
