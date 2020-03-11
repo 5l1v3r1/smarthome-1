@@ -131,7 +131,7 @@ class WifiCam(threading.Thread):
             process = subprocess.Popen("ps aux | grep ffmpeg | grep -v grep", shell=True, stdout=subprocess.PIPE)
             result = process.communicate()[0]
 
-            if result.strip() == "": break
+            if result.strip() == b"": break
 
             time.sleep(0.2)
             print("result: ", result)
