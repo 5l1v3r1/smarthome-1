@@ -127,7 +127,9 @@ class WifiCam(threading.Thread):
                 os.system("ffmpeg -y -r 5 -t 9 -i frames/frame%04d.jpg -c:v mpeg4 -vf scale=320x240 frames/video.mp4 &")
 
 
-
+        while not os.path.isfile("frames/video.mp4"):
+            time.sleep(0.1)
+            
         f = open("frames/video.mp4", "rb")
         video = f.read()
         f.close()
