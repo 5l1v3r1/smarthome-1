@@ -22,6 +22,7 @@ class Command:
     RELAY_ON              = "ON"
     RELAY_OFF             = "OFF"
     TAKE_PHOTO            = "PHOTO"
+    RECORD_VIDEO          = "VIDEO"
     DISABLE_MOTION_SENSOR = "MOFF"
     ENABLE_MOTION_SENSOR  = "MON"
 
@@ -58,6 +59,10 @@ class Commander:
                         print("PHOTO")
                         self._takePhoto()
 
+                    elif msg == Command.RECORD_VIDEO:
+                        print("VIDEO")
+                        self._sendVideo()
+
                     elif msg == Command.DISABLE_MOTION_SENSOR:
                         print("MOFF")
                         self._motionSensor.disable()
@@ -83,13 +88,9 @@ class Commander:
 
 
     def _sendVideo(self):
-        videoFile = webcam.shootVideo()
+        video = self._wifiCam.record()
 
-        f = open(videoFile, "rb")
-
-        self._telegram.sendVideo(f)
-
-        f.close()
+        self._telegram.sendPhoto(video)
 
         os.remove(videoFile)
 

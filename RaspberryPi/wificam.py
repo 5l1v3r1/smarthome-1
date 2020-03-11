@@ -123,11 +123,17 @@ class WifiCam(threading.Thread):
 
             frameId+=1
 
-        frameRate = int(frameId / 10)
+        #frameRate = int(frameId / 10)
+        os.system("ffmpeg -i frames/frame%04d.jpg frames/video.gif")
+
+        f = open("frames/video.gif", "rb")
+        video = f.read()
+        f.close()
 
         for i in range(frameId):
             os.remove("frames/frame{0:04d}.jpg".format(i))
 
+        os.remove("frames/video.gif")
 
         return video
 
