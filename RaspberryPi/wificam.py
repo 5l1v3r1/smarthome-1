@@ -126,10 +126,14 @@ class WifiCam(threading.Thread):
             if frameId == 25:
                 os.system("ffmpeg -y -r 5 -t 9 -i frames/frame%04d.jpg -c:v mpeg4 -vf scale=320x240 frames/video.mp4 &")
 
+        while True:
+            process = subprocess.Popen("ps aux | grep ffmpeg | grep -v grep", stdout=subprocess.PIPE)
+            result = process.communicate()[0]
 
-        while not os.path.isfile("frames/video.mp4"):
-            time.sleep(0.1)
-            
+            if result == "": break
+
+            time.sleep(0.2)
+
         f = open("frames/video.mp4", "rb")
         video = f.read()
         f.close()
