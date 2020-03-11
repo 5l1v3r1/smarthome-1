@@ -2,6 +2,7 @@ import os
 import threading
 import time
 import socket
+import subprocess
 
 class WifiCam(threading.Thread):
 
