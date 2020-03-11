@@ -131,15 +131,18 @@ class WifiCam(threading.Thread):
                 rate = 15 / totalTime
 
                 if rate < 3:
+                    print("here")
                     os.system(
-                        "ffmpeg -y -r 5 -t 9 -i frames/frame%04d.jpg -c:v mpeg4 -vf scale=320x240 frames/video.mp4 &")
+                        "ffmpeg -y -r {0} -t 9 -i frames/frame%04d.jpg -c:v mpeg4 -vf scale=320x240 frames/video.mp4 &".format(int(rate)))
                     convStarted = True
 
 
             if frameId == 25 and not convStarted:
+                print("here")
                 os.system("ffmpeg -y -r 5 -t 9 -i frames/frame%04d.jpg -c:v mpeg4 -vf scale=320x240 frames/video.mp4 &")
                 convStarted = True
 
+        print("id:", frameId)
         if convStarted:
             while True:
                 process = subprocess.Popen("ps aux | grep ffmpeg | grep -v grep", shell=True, stdout=subprocess.PIPE)
