@@ -27,7 +27,8 @@ class WifiCam(threading.Thread):
             s.listen()
             while True:
                 conn, addr = s.accept()
-                print("New connection: ", addr)
+                print(f"[+] New connection to WifiCam from {addr}")
+
                 conn.settimeout(0.1)
                 with conn:
                     while True:
@@ -76,7 +77,7 @@ class WifiCam(threading.Thread):
                             except socket.timeout:
                                 continue
                             except:
-                                print("Connection closed")
+                                print("[+] Connection to WifiCam is closed.")
                                 break
 
                             continue
@@ -164,8 +165,3 @@ class WifiCam(threading.Thread):
         os.remove("frames/video.mp4")
 
         return video
-
-
-
-
-

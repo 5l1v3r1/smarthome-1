@@ -48,35 +48,35 @@ class Commander:
 
                 for msg in msgs:
                     if msg == Command.RELAY_ON:
-                        print("ON")
+                        print("[+] Switch on message received.")
                         self._switchOn(Source.MANUAL)
 
                     elif msg == Command.RELAY_OFF:
-                        print("OFF")
+                        print("[+] Switch off message received.")
                         self._switchOff()
 
                     elif msg == Command.TAKE_PHOTO:
-                        print("PHOTO")
+                        print("[+] Take phote message received.")
                         self._takePhoto()
 
                     elif msg == Command.RECORD_VIDEO:
-                        print("VIDEO")
+                        print("[+] Record video message received.")
                         self._sendVideo()
 
                     elif msg == Command.DISABLE_MOTION_SENSOR:
-                        print("MOFF")
+                        print("[+] Disable motion sensor message received.")
                         self._motionSensor.disable()
                         self._telegram.sendMessage("Done")
 
                     elif msg == Command.ENABLE_MOTION_SENSOR:
-                        print("MON")
+                        print("[+] Enable motion sensor message received.")
                         self._motionSensor.enable()
                         self._telegram.sendMessage("Done")
             else:
                 msgCnt += 1
 
             if self._shouldTurnSwitchOff():
-                print("OFF")
+                print("[+] Turning switch off due to timeout...")
                 self._switchOff()
 
             time.sleep(0.1)

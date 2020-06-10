@@ -17,7 +17,8 @@ class RelayServer(threading.Thread):
             s.listen()
             while True:
                 conn, addr = s.accept()
-                print("New connection: ", addr)
+                print(f"[+] New connection to relay server from {addr}.")
+
                 conn.settimeout(0.1)
                 with conn:
                     while True:
@@ -26,18 +27,20 @@ class RelayServer(threading.Thread):
                                 data = conn.recv(256)
                                 while len(data) < 5:
                                     data += conn.recv(256)
+
                                 if "PING" in data.decode("ascii"):
                                     conn.sendall("PONG\n".encode("ascii"))
                             except socket.timeout:
                                 pass
                             except:
-                                print("Connection closed")
+                                print("[+] Connection to relay server is closed.")
                                 break
+
                             continue
 
                         cmd = self._cmdQueue.pop()
                         try:
-                            conn.sendall((cmd + "\n").encode("ascii"))
+                            conn.sendall(f"{cmd}\n".encode("ascii"))
                         except:
                             self._cmdQueue.insert(0, cmd)
                             break
