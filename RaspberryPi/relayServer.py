@@ -17,7 +17,7 @@ class RelayServer(threading.Thread):
             s.listen()
             while True:
                 conn, addr = s.accept()
-                print(f"[+] New connection to relay server from {addr}.")
+                print("[+] New connection to relay server from {0}.".format(addr))
 
                 conn.settimeout(0.1)
                 with conn:
@@ -40,7 +40,7 @@ class RelayServer(threading.Thread):
 
                         cmd = self._cmdQueue.pop()
                         try:
-                            conn.sendall(f"{cmd}\n".encode("ascii"))
+                            conn.sendall("{0}\n".format(cmd).encode("ascii"))
                         except:
                             self._cmdQueue.insert(0, cmd)
                             break

@@ -27,7 +27,7 @@ class WifiCam(threading.Thread):
             s.listen()
             while True:
                 conn, addr = s.accept()
-                print(f"[+] New connection to WifiCam from {addr}")
+                print("[+] New connection to WifiCam from {0}.".format(addr))
 
                 conn.settimeout(0.1)
                 with conn:
