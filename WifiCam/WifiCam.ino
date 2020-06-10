@@ -12,10 +12,11 @@
 #define PING_TIMEOUT 5000
 #define PING_RETRY_WAIT 10000
 
-#define PING_CMD  0x20
-#define PONG_CMD  0x21
-#define PHOTO_CMD 0x22
-#define VIDEO_CMD 0x23
+#define PING_CMD   0x20
+#define PONG_CMD   0x21
+#define PHOTO_CMD  0x22
+#define VIDEO_CMD  0x23
+#define STREAM_CMD 0x24
 
 #define PWDN_GPIO_NUM     32
 #define RESET_GPIO_NUM    -1
@@ -165,6 +166,49 @@ void recordAndSend() {
   client.write((uint8_t) 0x00);
 }
 
+void stream() {
+  WiFiClient streamClient;
+
+  for (int nc=0; nc<20; nc++) {
+    streamClient.connect(STREAM_ADDR, 42026);
+
+    if (streamClient.connected()) {
+      Serial.println("Connected to stream server");
+      break;
+    }
+
+    delay(COMM_RETRY_WAIT);
+  }
+
+  if (nc == 20) {
+    Serial.println("Unable to connect stream server");
+    return;
+  }
+  
+
+  while (streamClient.connected()) {
+    camera_fb_t * fb = NULL;
+  
+    fb = esp_camera_fb_get();  
+    if(!fb) {
+      Serial.println("Camera capture failed");
+      streamClient.stop();
+      return;
+    }
+
+    streamClient.write((uint8_t) ((fb->len >> 24) & 0xff));
+    streamClient.write((uint8_t) ((fb->len >> 16) & 0xff));
+    streamClient.write((uint8_t) ((fb->len >> 8) & 0xff ));
+    streamClient.write((uint8_t) (fb->len & 0xff));
+  
+    streamClient.write(fb->buf, fb->len);
+    
+    esp_camera_fb_return(fb);
+  }
+
+  streamClient.stop();
+}
+
 void loop() {
   if (WiFi.status() != WL_CONNECTED) connectWiFi();
 
@@ -201,6 +245,11 @@ void loop() {
           case VIDEO_CMD:
             Serial.println("VIDEO");
             recordAndSend();
+            break;
+            
+          case STREAM_CMD:
+            Serial.println("STREAM");
+            stream();
             break;
         }
       }

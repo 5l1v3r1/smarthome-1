@@ -6,10 +6,11 @@ import subprocess
 
 class WifiCam(threading.Thread):
 
-    PING_CMD  = b'\x20'
-    PONG_CMD  = b'\x21'
-    PHOTO_CMD = b'\x22'
-    VIDEO_CMD = b'\x23'
+    PING_CMD   = b'\x20'
+    PONG_CMD   = b'\x21'
+    PHOTO_CMD  = b'\x22'
+    VIDEO_CMD  = b'\x23'
+    STREAM_CMD = b'\x24'
 
 
     def __init__(self):
@@ -165,3 +166,6 @@ class WifiCam(threading.Thread):
         os.remove("frames/video.mp4")
 
         return video
+
+    def stream(self):
+        self.sendCommand(WifiCam.STREAM_CMD)

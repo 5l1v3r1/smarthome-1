@@ -25,6 +25,7 @@ class Command:
     RECORD_VIDEO          = "VIDEO"
     DISABLE_MOTION_SENSOR = "MOFF"
     ENABLE_MOTION_SENSOR  = "MON"
+    STREAM                = "STRM"
 
 
 class Commander:
@@ -72,6 +73,12 @@ class Commander:
                         print("[+] Enable motion sensor message received.")
                         self._motionSensor.enable()
                         self._telegram.sendMessage("Done")
+
+                    elif msg == Command.STREAM:
+                        print("[+] Stream message received.")
+                        self._stream()
+                        self._telegram.sendMessage(config.streamURL)
+
             else:
                 msgCnt += 1
 
@@ -86,11 +93,13 @@ class Commander:
 
         self._telegram.sendPhoto(photo)
 
-
     def _sendVideo(self):
         video = self._wifiCam.record()
 
         self._telegram.sendVideo(video)
+
+    def _stream(self):
+        self._wifiCam.stream()
 
     def _takePhoto(self):
         self._relayServer.sendCommand("ON")
@@ -118,7 +127,6 @@ class Commander:
 
 
 if __name__ == "__main__":
-
     commander = Commander()
     commander.start()
 
