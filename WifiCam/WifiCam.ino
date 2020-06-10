@@ -1,11 +1,9 @@
 #include <WiFi.h>
+#include "config.h"
 #include "esp_camera.h"
 #include "soc/soc.h"           // Disable brownour problems
 #include "soc/rtc_cntl_reg.h"  // Disable brownour problems
 #include "driver/rtc_io.h"
-
-#define WIFI_SSID     "Kablonet Netmaster-CA0B-G"
-#define WIFI_PASSWORD "ce1a5f35"
 
 #define RECORD_TIME 10 //10s
 
