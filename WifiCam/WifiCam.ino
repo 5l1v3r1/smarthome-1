@@ -168,7 +168,7 @@ void recordAndSend() {
 void loop() {
   if (WiFi.status() != WL_CONNECTED) connectWiFi();
 
-  if (!connectedToPi && !client.connect("192.168.0.12", 42025)) {
+  if (!connectedToPi && !client.connect(RPI_IP_ADDR, 42025)) {
       Serial.println("Connection failed");
       nc++;
       if (nc > COMM_RETRY_LIMIT) {
