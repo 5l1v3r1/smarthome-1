@@ -1,13 +1,10 @@
 #!/usr/bin/python3
 
-import os
 import time
 
 import config
-import motionSensor
 import relayServer
 import telegram
-import webcam
 import wificam
 
 
@@ -74,11 +71,6 @@ class Commander:
                         self._motionSensor.enable()
                         self._telegram.sendMessage("Done")
 
-                    elif msg == Command.STREAM:
-                        print("[+] Stream message received.")
-                        self._stream()
-                        self._telegram.sendMessage(config.streamURL)
-
             else:
                 msgCnt += 1
 
@@ -97,9 +89,6 @@ class Commander:
         video = self._wifiCam.record()
 
         self._telegram.sendVideo(video)
-
-    def _stream(self):
-        self._wifiCam.stream()
 
     def _takePhoto(self):
         self._relayServer.sendCommand("ON")

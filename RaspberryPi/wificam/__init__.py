@@ -3,6 +3,7 @@ import threading
 import time
 import socket
 import subprocess
+import wificam.stream
 
 class WifiCam(threading.Thread):
 
@@ -20,7 +21,10 @@ class WifiCam(threading.Thread):
         self._photoQueue = []
         self._frameQueue = []
 
+        self._httpd = wificam.stream.StreamServer(self)
+
     def run(self):
+        self._httpd.start()
 
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, True)

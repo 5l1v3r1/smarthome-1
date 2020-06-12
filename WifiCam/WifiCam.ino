@@ -1,3 +1,4 @@
+#include <HTTPClient.h>
 #include <WiFi.h>
 #include "config.h"
 #include "esp_camera.h"
@@ -37,6 +38,8 @@
 #define PCLK_GPIO_NUM     22
 
 WiFiClient client;
+WiFiClient streamClient;
+
 unsigned int nc = 0;
 unsigned long pingTimer = 0;
 unsigned long lastPing = 0;
@@ -89,8 +92,8 @@ void setup() {
   config.pixel_format = PIXFORMAT_JPEG; 
   
   if(psramFound()){
-    config.frame_size = FRAMESIZE_UXGA; // FRAMESIZE_ + QVGA|CIF|VGA|SVGA|XGA|SXGA|UXGA
-    config.jpeg_quality = 10;
+    config.frame_size = FRAMESIZE_VGA; // FRAMESIZE_ + QVGA|CIF|VGA|SVGA|XGA|SXGA|UXGA
+    config.jpeg_quality = 8;
     config.fb_count = 2;
   } else {
     config.frame_size = FRAMESIZE_SVGA;
@@ -167,24 +170,11 @@ void recordAndSend() {
 }
 
 void stream() {
-  WiFiClient streamClient;
 
-  for (int nc=0; nc<20; nc++) {
-    streamClient.connect(STREAM_ADDR, 42026);
-
-    if (streamClient.connected()) {
-      Serial.println("Connected to stream server");
-      break;
-    }
-
-    delay(COMM_RETRY_WAIT);
-  }
-
-  if (nc == 20) {
-    Serial.println("Unable to connect stream server");
+  if (!streamClient.connected()) {
+    Serial.println("There is no connection to stream server");
     return;
   }
-  
 
   while (streamClient.connected()) {
     camera_fb_t * fb = NULL;
@@ -212,7 +202,7 @@ void stream() {
 void loop() {
   if (WiFi.status() != WL_CONNECTED) connectWiFi();
 
-  if (!connectedToPi && !client.connect(RPI_IP_ADDR, 42025)) {
+  if (!connectedToPi && !client.connect(RPI_ADDR, 42025)) {
       Serial.println("Connection failed");
       nc++;
       if (nc > COMM_RETRY_LIMIT) {
@@ -224,6 +214,10 @@ void loop() {
   }
   nc = 0;
   connectedToPi = true;
+
+  if (!streamClient.connected()) {
+    streamClient.connect(RPI_ADDR, 42026);  
+  }
   
   bool dataReceived = false;
   uint8_t buffer[1];
