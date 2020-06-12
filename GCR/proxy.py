@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import os
 import random
 import socket
 import string
@@ -63,5 +64,5 @@ class Streamer(BaseHTTPRequestHandler):
                     return
 
 if __name__ == "__main__":
-    httpd = HTTPServer(("0.0.0.0", 8000), Streamer)
+    httpd = HTTPServer(("0.0.0.0", int(os.environ["PORT"])), Streamer)
     httpd.serve_forever()
