@@ -202,7 +202,7 @@ void stream() {
 void loop() {
   if (WiFi.status() != WL_CONNECTED) connectWiFi();
 
-  if (!connectedToPi && !client.connect(RPI_ADDR, 42025)) {
+  if (!connectedToPi && !client.connect(REMOTE_ADDR, 42025)) {
       Serial.println("Connection failed");
       nc++;
       if (nc > COMM_RETRY_LIMIT) {
@@ -216,7 +216,7 @@ void loop() {
   connectedToPi = true;
 
   if (!streamClient.connected()) {
-    streamClient.connect(RPI_ADDR, 42026);  
+    streamClient.connect(REMOTE_ADDR, 42026);  
   }
   
   bool dataReceived = false;

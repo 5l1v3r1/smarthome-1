@@ -1,7 +1,5 @@
 #include <WiFi.h>
-
-#define WIFI_SSID     "Kablonet Netmaster-CA0B-G"
-#define WIFI_PASSWORD "ce1a5f35"
+#include "config.h"
 
 #define RELAY_PIN 15
 
@@ -46,7 +44,7 @@ void setup() {
 void loop() {
   if (WiFi.status() != WL_CONNECTED) connectWiFi();
 
-  if (!client && !client.connect("192.168.0.12", 42024)) {
+  if (!client && !client.connect(REMOTE_ADDR, 42024)) {
       Serial.println("Connection failed");
       nc++;
       if (nc > COMM_RETRY_LIMIT) {
