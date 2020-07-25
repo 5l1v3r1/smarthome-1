@@ -14,8 +14,10 @@ class WifiCam(threading.Thread):
     STREAM_CMD = b'\x24'
 
 
-    def __init__(self):
+    def __init__(self, telegram):
         threading.Thread.__init__(self)
+
+        self._telegram = telegram
 
         self._cmdQueue = []
         self._photoQueue = []
@@ -56,7 +58,8 @@ class WifiCam(threading.Thread):
                                         data += conn.recv(pLen - len(data))
 
                                     conn.settimeout(0.1)
-                                    self._photoQueue.append(data)
+
+                                    self._telegram.sendPhoto(data)
                                 elif cmd == WifiCam.VIDEO_CMD:
                                     conn.settimeout(None)
 
@@ -102,13 +105,6 @@ class WifiCam(threading.Thread):
 
     def takePhoto(self):
         self.sendCommand(WifiCam.PHOTO_CMD)
-
-        while True:
-            if len(self._photoQueue) == 0:
-                time.sleep(0.1)
-                continue
-
-            return self._photoQueue.pop()
 
     def record(self):
         self.sendCommand(WifiCam.VIDEO_CMD)
