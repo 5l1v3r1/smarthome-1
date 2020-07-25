@@ -30,7 +30,7 @@ class Commander:
     def __init__(self):
         self._telegram = telegram.Telegram(config.telegramURL, config.telegramToken, config.telegramChatId)
         self._relayServer = relayServer.RelayServer()
-        self._wifiCam = wificam.WifiCam()
+        self._wifiCam = wificam.WifiCam(self._telegram)
 
         self._switchOnTs = 0
 
@@ -81,9 +81,7 @@ class Commander:
             time.sleep(0.1)
 
     def _sendPhoto(self):
-        photo = self._wifiCam.takePhoto()
-
-        self._telegram.sendPhoto(photo)
+        self._wifiCam.takePhoto()
 
     def _sendVideo(self):
         video = self._wifiCam.record()

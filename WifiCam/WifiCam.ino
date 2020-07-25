@@ -37,6 +37,8 @@
 #define HREF_GPIO_NUM     23
 #define PCLK_GPIO_NUM     22
 
+#define PIR_GPIO_NUM      14
+
 WiFiClient client;
 WiFiClient streamClient;
 
@@ -45,6 +47,10 @@ unsigned long pingTimer = 0;
 unsigned long lastPing = 0;
 
 bool connectedToPi = false;
+
+unsigned long lastTriggered = 0;
+#define TRIGGER_TIMEOUT 10 // in seconds
+
 
 void connectWiFi() {
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
@@ -109,6 +115,8 @@ void setup() {
   }
 
   connectWiFi();
+
+  pinMode(PIR_GPIO_NUM, INPUT);
 
 }
 
@@ -199,6 +207,14 @@ void stream() {
   streamClient.stop();
 }
 
+bool hasMotion() {
+  int val = digitalRead(PIR_GPIO_NUM);
+
+  //Serial.println(val);
+
+  return val == 1;
+}
+
 void loop() {
   if (WiFi.status() != WL_CONNECTED) connectWiFi();
 
@@ -217,6 +233,15 @@ void loop() {
 
   if (!streamClient.connected()) {
     streamClient.connect(REMOTE_ADDR, 42026);  
+  }
+
+  if (hasMotion()) {
+    if (lastTriggered == 0 || millis() - lastTriggered > TRIGGER_TIMEOUT * 1000) {
+      Serial.println("intruder alert!!");
+      lastTriggered = millis();
+      takePhotoAndSend();
+    }
+
   }
   
   bool dataReceived = false;
