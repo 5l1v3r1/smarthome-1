@@ -14,4 +14,4 @@ jobs:
         python-version: 3.7
 
     - name: Check Syntax
-      run: find RaspberryPi/ -name '*.py' | xargs  python -m py_compile
+      run: find Central/ -name '*.py' | xargs python -m py_compile
