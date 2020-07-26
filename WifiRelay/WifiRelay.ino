@@ -8,6 +8,11 @@
 #define PING_TIMEOUT 5000
 #define PING_RETRY_WAIT 10000
 
+#define PING_CMD 0x20
+#define PONG_CMD 0x21
+#define ON_CMD   0x25
+#define OFF_CMD  0x26
+
 WiFiClient client;
 unsigned int nc = 0;
 unsigned long pingTimer = 0;
@@ -57,20 +62,37 @@ void loop() {
   nc = 0;
   
   bool dataReceived = false;
+  uint8_t buffer[1];
   while(client.available()) {
       dataReceived = true;
-      String line = client.readStringUntil('\n');
+      int n = client.read(buffer, 1);
 
-      Serial.println(line);
+      if (n != 1) {
+        continue;
+      }
 
-      if (line.equals("ON")) digitalWrite(RELAY_PIN, LOW);
-      else if (line.equals("OFF")) digitalWrite(RELAY_PIN, HIGH);
-      else if (line.equals("PONG")) pingTimer = 0;
+      switch(buffer[0]) {
+        case PONG_CMD:
+          Serial.println("PONG");
+          pingTimer=0;
+          break;
+          
+        case ON_CMD:
+          Serial.println("ON");
+          digitalWrite(RELAY_PIN, LOW);
+          break;
+          
+        case OFF_CMD:
+          Serial.println("OFF");
+          digitalWrite(RELAY_PIN, HIGH);
+          break;
+            
+      }
       
   }
 
   if (pingTimer == 0 && !dataReceived && (millis() - lastPing) > PING_RETRY_WAIT) {
-    client.print(String("PING\n"));
+    client.write(PING_CMD);
     Serial.println("PING");
     pingTimer = millis();
     lastPing = pingTimer;

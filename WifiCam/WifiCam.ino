@@ -46,7 +46,7 @@ unsigned int nc = 0;
 unsigned long pingTimer = 0;
 unsigned long lastPing = 0;
 
-bool connectedToPi = false;
+bool connectedToRemote = false;
 
 unsigned long lastTriggered = 0;
 #define TRIGGER_TIMEOUT 10 // in seconds
@@ -218,7 +218,7 @@ bool hasMotion() {
 void loop() {
   if (WiFi.status() != WL_CONNECTED) connectWiFi();
 
-  if (!connectedToPi && !client.connect(REMOTE_ADDR, 42025)) {
+  if (!connectedToRemote && !client.connect(REMOTE_ADDR, 42025)) {
       Serial.println("Connection failed");
       nc++;
       if (nc > COMM_RETRY_LIMIT) {
@@ -229,7 +229,7 @@ void loop() {
       return;
   }
   nc = 0;
-  connectedToPi = true;
+  connectedToRemote = true;
 
   if (!streamClient.connected()) {
     streamClient.connect(REMOTE_ADDR, 42026);  
@@ -249,29 +249,33 @@ void loop() {
   while(client.available()) {
       dataReceived = true;
       int n = client.read(buffer, 1);
-      if (n == 1) {
-        switch(buffer[0]) {
-          case PONG_CMD:
-            Serial.println("PONG");
-            pingTimer=0;
-            break;
-            
-          case PHOTO_CMD:
-            Serial.println("PHOTO");
-            takePhotoAndSend();
-            break;
-
-          case VIDEO_CMD:
-            Serial.println("VIDEO");
-            recordAndSend();
-            break;
-            
-          case STREAM_CMD:
-            Serial.println("STREAM");
-            stream();
-            break;
-        }
+      
+      if (n != 1) {
+        continue;
       }
+      
+      switch(buffer[0]) {
+        case PONG_CMD:
+          Serial.println("PONG");
+          pingTimer=0;
+          break;
+          
+        case PHOTO_CMD:
+          Serial.println("PHOTO");
+          takePhotoAndSend();
+          break;
+
+        case VIDEO_CMD:
+          Serial.println("VIDEO");
+          recordAndSend();
+          break;
+          
+        case STREAM_CMD:
+          Serial.println("STREAM");
+          stream();
+          break;
+      }
+      
   }
 
   if (pingTimer == 0 && !dataReceived && (millis() - lastPing) > PING_RETRY_WAIT) {
@@ -282,7 +286,7 @@ void loop() {
   } else if (pingTimer > 0 && !dataReceived && (millis() - pingTimer) > PING_TIMEOUT) {
     Serial.println("Connection is not alive!");
     pingTimer = 0;
-    connectedToPi = false;
+    connectedToRemote = false;
     client.stop();
   }
 
