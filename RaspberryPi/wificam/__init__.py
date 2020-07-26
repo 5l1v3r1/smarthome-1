@@ -26,79 +26,95 @@ class WifiCam(threading.Thread):
         self._httpd = wificam.stream.StreamServer(self)
 
     def run(self):
-        self._httpd.start()
+        # self._httpd.start()
 
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, True)
-            s.bind(("0.0.0.0", 42025))
-            s.listen()
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, True)
+        s.bind(("0.0.0.0", 42025))
+        s.listen()
+
+        while True:
+            conn, addr = s.accept()
+            print("[+] New connection to WifiCam server from {0}.".format(addr))
+
+            conn.settimeout(0.5)
+
             while True:
-                conn, addr = s.accept()
-                print("[+] New connection to WifiCam from {0}.".format(addr))
+                if len(self._cmdQueue) > 0:
+                    cmd = self._cmdQueue.pop()
+                    try:
+                        conn.sendall(cmd)
+                    except:
+                        self._cmdQueue.insert(0, cmd)
+                        break
 
-                conn.settimeout(0.1)
-                with conn:
-                    while True:
-                        if len(self._cmdQueue) == 0:
-                            try:
-                                cmd = conn.recv(1)
+                    continue
+                else: # check if connection is alive
+                    try:
+                        conn.sendall(WifiCam.PING_CMD)
+                    except:
+                        print("[+] Connection to WifiCam server is closed.")
+                        break
 
-                                if cmd == WifiCam.PING_CMD:
-                                    conn.sendall(WifiCam.PONG_CMD)
-                                elif cmd == WifiCam.PHOTO_CMD:
-                                    conn.settimeout(None)
-                                    data = conn.recv(4)
-                                    while len(data) < 4:
-                                        data += conn.recv(4 - len(data))
+                cmd = b''
+                try:
+                    cmd = conn.recv(1)
 
-                                    pLen = (data[0] << 24) | (data[1] << 16) | (data[2] << 8) | data[3]
+                except socket.timeout:
+                    continue
 
-                                    data = conn.recv(pLen)
-                                    while len(data) < pLen:
-                                        data += conn.recv(pLen - len(data))
+                except:
+                    print("[+] Connection to WifiCam server is closed.")
+                    break
 
-                                    conn.settimeout(0.1)
+                try:
+                    if cmd == WifiCam.PING_CMD:
+                        conn.sendall(WifiCam.PONG_CMD)
+                    elif cmd == WifiCam.PHOTO_CMD:
+                        conn.settimeout(None)
 
-                                    self._telegram.sendPhoto(data)
-                                elif cmd == WifiCam.VIDEO_CMD:
-                                    conn.settimeout(None)
+                        data = conn.recv(4)
+                        while len(data) < 4:
+                            data += conn.recv(4 - len(data))
 
-                                    while True:
-                                        data = conn.recv(4)
-                                        while len(data) < 4:
-                                            data += conn.recv(4 - len(data))
+                        pLen = (data[0] << 24) | (data[1] << 16) | (data[2] << 8) | data[3]
 
-                                        pLen = (data[0] << 24) | (data[1] << 16) | (data[2] << 8) | data[3]
+                        data = conn.recv(pLen)
+                        while len(data) < pLen:
+                            data += conn.recv(pLen - len(data))
 
-                                        if pLen == 0:
-                                            break
+                        conn.settimeout(0.5)
 
-                                        data = conn.recv(pLen)
-                                        while len(data) < pLen:
-                                            data += conn.recv(pLen - len(data))
+                        self._telegram.sendPhoto(data)
+                    elif cmd == WifiCam.VIDEO_CMD:
+                        conn.settimeout(None)
 
-                                        self._frameQueue.append(data)
+                        while True:
+                            data = conn.recv(4)
+                            while len(data) < 4:
+                                data += conn.recv(4 - len(data))
 
-                                    self._frameQueue.append("END")
+                            pLen = (data[0] << 24) | (data[1] << 16) | (data[2] << 8) | data[3]
 
-                                    conn.settimeout(0.1)
-                            except socket.timeout:
-                                continue
-                            except:
-                                print("[+] Connection to WifiCam is closed.")
+                            if pLen == 0:
                                 break
 
-                            continue
+                            data = conn.recv(pLen)
+                            while len(data) < pLen:
+                                data += conn.recv(pLen - len(data))
 
-                        cmd = self._cmdQueue.pop()
-                        try:
-                            conn.sendall(cmd)
-                        except:
-                            self._cmdQueue.insert(0, cmd)
-                            break
+                            self._frameQueue.append(data)
 
-                    conn.close()
-                    time.sleep(0.1)
+                        self._frameQueue.append("END")
+
+                        conn.settimeout(0.5)
+
+                except:
+                    print("[+] Connection to WifiCam server is closed.")
+                    break
+
+        conn.close()
+        time.sleep(0.1)
 
     def sendCommand(self, cmd):
         self._cmdQueue.append(cmd)
