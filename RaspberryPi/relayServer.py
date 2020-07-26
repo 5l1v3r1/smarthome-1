@@ -4,6 +4,12 @@ import socket
 
 class RelayServer(threading.Thread):
 
+    PING_CMD = b'\x20'
+    PONG_CMD = b'\x21'
+    ON_CMD   = b'\x25'
+    OFF_CMD  = b'\x26'
+
+
     def __init__(self):
         threading.Thread.__init__(self)
 
@@ -20,30 +26,35 @@ class RelayServer(threading.Thread):
             conn, addr = s.accept()
             print("[+] New connection to relay server from {0}.".format(addr))
 
-            conn.settimeout(0.1)
+            conn.settimeout(0.5)
 
             while True:
-                if len(self._cmdQueue) == 0:
-                    try:
-                        data = conn.recv(256)
-                        while len(data) < 5:
-                            data += conn.recv(256)
 
-                        if "PING" in data.decode("ascii"):
-                            conn.sendall("PONG\n".encode("ascii"))
-                    except socket.timeout:
-                        pass
+                if len(self._cmdQueue) > 0:
+                    cmd = self._cmdQueue.pop()
+                    try:
+                        conn.sendall(cmd)
                     except:
-                        print("[+] Connection to relay server is closed.")
+                        self._cmdQueue.insert(0, cmd)
                         break
 
                     continue
+                else: # check if connection is alive
+                    try:
+                        conn.sendall(RelayServer.PING_CMD)
+                    except:
+                        print("[+] Connection to WifiCam server is closed.")
+                        break
 
-                cmd = self._cmdQueue.pop()
                 try:
-                    conn.sendall("{0}\n".format(cmd).encode("ascii"))
+                    data = conn.recv(1)
+
+                    if data == RelayServer.PING_CMD:
+                        conn.sendall(RelayServer.PONG_CMD)
+                except socket.timeout:
+                    pass
                 except:
-                    self._cmdQueue.insert(0, cmd)
+                    print("[+] Connection to relay server is closed.")
                     break
 
             conn.close()
