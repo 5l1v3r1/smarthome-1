@@ -55,7 +55,7 @@ bool connectedToRemote = false;
 bool sensorEnabled = true;
 
 unsigned long lastTriggered = 0;
-#define TRIGGER_TIMEOUT 10 // in seconds
+#define TRIGGER_TIMEOUT 150 // in seconds
 
 
 void connectWiFi() {
@@ -284,10 +284,10 @@ void loop() {
           break;
           
         case STREAM_CMD:
-          digitalWrite(RELAY_GPIO_NUM, LOW);
           Serial.println("STREAM");
-          digitalWrite(RELAY_GPIO_NUM, HIGH);
+          digitalWrite(RELAY_GPIO_NUM, LOW);
           stream();
+          digitalWrite(RELAY_GPIO_NUM, HIGH);
           break;
 
         case MON_CMD:

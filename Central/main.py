@@ -66,6 +66,11 @@ class Commander:
                         self._wifiCam.sensorOn()
                         self._telegram.sendMessage("Done")
 
+                    elif msg == Command.STREAM:
+                        print("[+] Stream message received.")
+                        self._telegram.sendMessage("http://psaux.io:8080/homestream")
+
+
             else:
                 msgCnt += 1
 
