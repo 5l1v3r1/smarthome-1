@@ -7,11 +7,6 @@ import relayServer
 import telegram
 import wificam
 
-
-class Source:
-    MOTION = 0
-    MANUAL = 1
-
 def currentTime():
     return int(time.time())
 
@@ -47,7 +42,7 @@ class Commander:
                 for msg in msgs:
                     if msg == Command.RELAY_ON:
                         print("[+] Switch on message received.")
-                        self._switchOn(Source.MANUAL)
+                        self._switchOn()
 
                     elif msg == Command.RELAY_OFF:
                         print("[+] Switch off message received.")
@@ -63,12 +58,10 @@ class Commander:
 
                     elif msg == Command.DISABLE_MOTION_SENSOR:
                         print("[+] Disable motion sensor message received.")
-                        self._motionSensor.disable()
                         self._telegram.sendMessage("Done")
 
                     elif msg == Command.ENABLE_MOTION_SENSOR:
                         print("[+] Enable motion sensor message received.")
-                        self._motionSensor.enable()
                         self._telegram.sendMessage("Done")
 
             else:
@@ -89,23 +82,14 @@ class Commander:
         self._telegram.sendVideo(video)
 
     def _takePhoto(self):
-        self._relayServer.sendCommand("ON")
-
         self._sendPhoto()
 
-        if self._switchOnTs == 0: self._relayServer.sendCommand("OFF")
-
-    def _switchOn(self, source):
-        #if source == Source.MOTION and self._switchOnTs > 0 : return
-
-        self._relayServer.sendCommand("ON")
+    def _switchOn(self):
+        self._relayServer.switchOn()
         self._switchOnTs = currentTime()
 
-        if source == Source.MOTION:
-            self._sendVideo()
-
     def _switchOff(self):
-        self._relayServer.sendCommand("OFF")
+        self._relayServer.switchOff()
         self._switchOnTs = 0
         self._telegram.sendMessage("OFF")
 
