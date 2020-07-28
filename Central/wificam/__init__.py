@@ -12,6 +12,8 @@ class WifiCam(threading.Thread):
     PHOTO_CMD  = b'\x22'
     VIDEO_CMD  = b'\x23'
     STREAM_CMD = b'\x24'
+    MON_CMD    = b'\x27'
+    MOFF_CMD   = b'\x28'
 
 
     def __init__(self, telegram):
@@ -113,8 +115,8 @@ class WifiCam(threading.Thread):
                     print("[+] Connection to WifiCam server is closed.")
                     break
 
-        conn.close()
-        time.sleep(0.1)
+            conn.close()
+            time.sleep(0.1)
 
     def sendCommand(self, cmd):
         self._cmdQueue.append(cmd)
@@ -185,3 +187,9 @@ class WifiCam(threading.Thread):
 
     def stream(self):
         self.sendCommand(WifiCam.STREAM_CMD)
+
+    def sensorOn(self):
+        self.sendCommand(WifiCam.MON_CMD)
+
+    def sensorOff(self):
+        self.sendCommand(WifiCam.MOFF_CMD)
