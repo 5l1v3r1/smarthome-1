@@ -41,6 +41,8 @@
 
 #define PIR_GPIO_NUM      14
 
+#define RELAY_GPIO_NUM    15
+
 WiFiClient client;
 WiFiClient streamClient;
 
@@ -62,7 +64,7 @@ void connectWiFi() {
   while (WiFi.status() != WL_CONNECTED) {
       nc++;
       if (nc > COMM_RETRY_LIMIT) {
-        //digitalWrite(RELAY_PIN, HIGH);
+        digitalWrite(RELAY_GPIO_NUM, HIGH);
         nc = 0;
       }
       delay(COMM_RETRY_WAIT);
@@ -73,6 +75,9 @@ void connectWiFi() {
 }
 
 void setup() {
+  pinMode(RELAY_GPIO_NUM, OUTPUT);
+  digitalWrite(RELAY_GPIO_NUM, HIGH);
+  
   Serial.begin(115200);
 
   while(!Serial);
@@ -266,16 +271,22 @@ void loop() {
           
         case PHOTO_CMD:
           Serial.println("PHOTO");
+          digitalWrite(RELAY_GPIO_NUM, LOW);
           takePhotoAndSend();
+          digitalWrite(RELAY_GPIO_NUM, HIGH);
           break;
 
         case VIDEO_CMD:
           Serial.println("VIDEO");
+          digitalWrite(RELAY_GPIO_NUM, LOW);
           recordAndSend();
+          digitalWrite(RELAY_GPIO_NUM, HIGH);
           break;
           
         case STREAM_CMD:
+          digitalWrite(RELAY_GPIO_NUM, LOW);
           Serial.println("STREAM");
+          digitalWrite(RELAY_GPIO_NUM, HIGH);
           stream();
           break;
 
