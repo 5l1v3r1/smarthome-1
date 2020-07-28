@@ -16,7 +16,6 @@
 #define PING_CMD   0x20
 #define PONG_CMD   0x21
 #define PHOTO_CMD  0x22
-#define VIDEO_CMD  0x23
 #define STREAM_CMD 0x24
 #define MON_CMD    0x27
 #define MOFF_CMD   0x28
@@ -154,38 +153,6 @@ void takePhotoAndSend() {
   
 }
 
-
-void recordAndSend() {
-  unsigned long startTime = millis();
-
-  client.write(VIDEO_CMD);
-
-  while (millis() - startTime < RECORD_TIME * 1000) {
-    camera_fb_t * fb = NULL;
-  
-    fb = esp_camera_fb_get();  
-    if(!fb) {
-      Serial.println("Camera capture failed");
-      return;
-    }
-  
-    client.write((uint8_t) ((fb->len >> 24) & 0xff));
-    client.write((uint8_t) ((fb->len >> 16) & 0xff));
-    client.write((uint8_t) ((fb->len >> 8) & 0xff ));
-    client.write((uint8_t) (fb->len & 0xff));  
-  
-    client.write(fb->buf, fb->len);
-    
-    esp_camera_fb_return(fb);
-    
-  }
-
-  client.write((uint8_t) 0x00);
-  client.write((uint8_t) 0x00);
-  client.write((uint8_t) 0x00);
-  client.write((uint8_t) 0x00);
-}
-
 void stream() {
 
   if (!streamClient.connected()) {
@@ -273,13 +240,6 @@ void loop() {
           Serial.println("PHOTO");
           digitalWrite(RELAY_GPIO_NUM, LOW);
           takePhotoAndSend();
-          digitalWrite(RELAY_GPIO_NUM, HIGH);
-          break;
-
-        case VIDEO_CMD:
-          Serial.println("VIDEO");
-          digitalWrite(RELAY_GPIO_NUM, LOW);
-          recordAndSend();
           digitalWrite(RELAY_GPIO_NUM, HIGH);
           break;
           

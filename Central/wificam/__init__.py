@@ -10,7 +10,6 @@ class WifiCam(threading.Thread):
     PING_CMD   = b'\x20'
     PONG_CMD   = b'\x21'
     PHOTO_CMD  = b'\x22'
-    VIDEO_CMD  = b'\x23'
     STREAM_CMD = b'\x24'
     MON_CMD    = b'\x27'
     MOFF_CMD   = b'\x28'
@@ -22,8 +21,6 @@ class WifiCam(threading.Thread):
         self._telegram = telegram
 
         self._cmdQueue = []
-        self._photoQueue = []
-        self._frameQueue = []
 
         self._httpd = wificam.stream.StreamServer(self)
 
@@ -88,28 +85,6 @@ class WifiCam(threading.Thread):
                         conn.settimeout(0.5)
 
                         self._telegram.sendPhoto(data)
-                    elif cmd == WifiCam.VIDEO_CMD:
-                        conn.settimeout(None)
-
-                        while True:
-                            data = conn.recv(4)
-                            while len(data) < 4:
-                                data += conn.recv(4 - len(data))
-
-                            pLen = (data[0] << 24) | (data[1] << 16) | (data[2] << 8) | data[3]
-
-                            if pLen == 0:
-                                break
-
-                            data = conn.recv(pLen)
-                            while len(data) < pLen:
-                                data += conn.recv(pLen - len(data))
-
-                            self._frameQueue.append(data)
-
-                        self._frameQueue.append("END")
-
-                        conn.settimeout(0.5)
 
                     elif cmd == WifiCam.STREAM_CMD:
                         conn.sendall(WifiCam.STREAM_CMD)
@@ -126,67 +101,6 @@ class WifiCam(threading.Thread):
 
     def takePhoto(self):
         self.sendCommand(WifiCam.PHOTO_CMD)
-
-    def record(self):
-        self.sendCommand(WifiCam.VIDEO_CMD)
-
-        frameId = 0
-        startTime = time.time()
-        convStarted = False
-        while True:
-            if len(self._frameQueue) == 0:
-                time.sleep(0.1)
-                continue
-
-            frame = self._frameQueue.pop()
-
-            if frame == "END":
-                break
-
-            f = open("frames/frame{0:04d}.jpg".format(frameId), "wb")
-            f.write(frame)
-            f.close()
-
-            frameId+=1
-
-            if frameId == 15:
-                totalTime = time.time() - startTime
-                rate = 15 / totalTime
-
-                if rate < 3:
-                    print("here")
-                    os.system(
-                        "ffmpeg -y -r {0} -t 9 -i frames/frame%04d.jpg -c:v mpeg4 -vf scale=320x240 frames/video.mp4 &".format(int(rate)))
-                    convStarted = True
-
-
-            if frameId == 25 and not convStarted:
-                print("here")
-                os.system("ffmpeg -y -r 5 -t 9 -i frames/frame%04d.jpg -c:v mpeg4 -vf scale=320x240 frames/video.mp4 &")
-                convStarted = True
-
-        print("id:", frameId)
-        if convStarted:
-            while True:
-                process = subprocess.Popen("ps aux | grep ffmpeg | grep -v grep", shell=True, stdout=subprocess.PIPE)
-                result = process.communicate()[0]
-
-                if result.strip() == b"": break
-
-                time.sleep(0.2)
-        else:
-            os.system("ffmpeg -y -r 5 -t 9 -i frames/frame%04d.jpg -c:v mpeg4 -vf scale=320x240 frames/video.mp4")
-
-        f = open("frames/video.mp4", "rb")
-        video = f.read()
-        f.close()
-
-        for i in range(frameId):
-            os.remove("frames/frame{0:04d}.jpg".format(i))
-
-        os.remove("frames/video.mp4")
-
-        return video
 
     def stream(self):
         self.sendCommand(WifiCam.STREAM_CMD)

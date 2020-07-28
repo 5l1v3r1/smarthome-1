@@ -14,7 +14,6 @@ class Command:
     RELAY_ON              = "ON"
     RELAY_OFF             = "OFF"
     TAKE_PHOTO            = "PHOTO"
-    RECORD_VIDEO          = "VIDEO"
     DISABLE_MOTION_SENSOR = "MOFF"
     ENABLE_MOTION_SENSOR  = "MON"
     STREAM                = "STRM"
@@ -49,12 +48,8 @@ class Commander:
                         self._switchOff()
 
                     elif msg == Command.TAKE_PHOTO:
-                        print("[+] Take phote message received.")
+                        print("[+] Take photo message received.")
                         self._takePhoto()
-
-                    elif msg == Command.RECORD_VIDEO:
-                        print("[+] Record video message received.")
-                        self._sendVideo()
 
                     elif msg == Command.DISABLE_MOTION_SENSOR:
                         print("[+] Disable motion sensor message received.")
@@ -80,16 +75,8 @@ class Commander:
 
             time.sleep(0.1)
 
-    def _sendPhoto(self):
-        self._wifiCam.takePhoto()
-
-    def _sendVideo(self):
-        video = self._wifiCam.record()
-
-        self._telegram.sendVideo(video)
-
     def _takePhoto(self):
-        self._sendPhoto()
+        self._wifiCam.takePhoto()
 
     def _switchOn(self):
         self._relayServer.switchOn()
