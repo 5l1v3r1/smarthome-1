@@ -18,6 +18,8 @@
 #define PHOTO_CMD  0x22
 #define VIDEO_CMD  0x23
 #define STREAM_CMD 0x24
+#define MON_CMD    0x27
+#define MOFF_CMD   0x28
 
 #define PWDN_GPIO_NUM     32
 #define RESET_GPIO_NUM    -1
@@ -47,6 +49,8 @@ unsigned long pingTimer = 0;
 unsigned long lastPing = 0;
 
 bool connectedToRemote = false;
+
+bool sensorEnabled = true;
 
 unsigned long lastTriggered = 0;
 #define TRIGGER_TIMEOUT 10 // in seconds
@@ -235,7 +239,7 @@ void loop() {
     streamClient.connect(REMOTE_ADDR, 42026);  
   }
 
-  if (hasMotion()) {
+  if (sensorEnabled && hasMotion()) {
     if (lastTriggered == 0 || millis() - lastTriggered > TRIGGER_TIMEOUT * 1000) {
       Serial.println("intruder alert!!");
       lastTriggered = millis();
@@ -273,6 +277,16 @@ void loop() {
         case STREAM_CMD:
           Serial.println("STREAM");
           stream();
+          break;
+
+        case MON_CMD:
+          Serial.println("MON");
+          sensorEnabled = true;
+          break;
+
+        case MOFF_CMD:
+          Serial.println("MOFF");
+          sensorEnabled = false;
           break;
       }
       

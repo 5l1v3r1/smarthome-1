@@ -58,10 +58,12 @@ class Commander:
 
                     elif msg == Command.DISABLE_MOTION_SENSOR:
                         print("[+] Disable motion sensor message received.")
+                        self._wifiCam.sensorOff()
                         self._telegram.sendMessage("Done")
 
                     elif msg == Command.ENABLE_MOTION_SENSOR:
                         print("[+] Enable motion sensor message received.")
+                        self._wifiCam.sensorOn()
                         self._telegram.sendMessage("Done")
 
             else:
