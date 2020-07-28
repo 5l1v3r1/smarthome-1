@@ -43,7 +43,7 @@ class RelayServer(threading.Thread):
                     try:
                         conn.sendall(RelayServer.PING_CMD)
                     except:
-                        print("[+] Connection to WifiCam server is closed.")
+                        print("[+] Connection to relay server is closed.")
                         break
 
                 try:
@@ -59,5 +59,8 @@ class RelayServer(threading.Thread):
 
             conn.close()
 
-    def sendCommand(self, cmd):
-        self._cmdQueue.append(cmd)
+    def switchOn(self):
+        self._cmdQueue.append(RelayServer.ON_CMD)
+
+    def switchOff(self):
+        self._cmdQueue.append(RelayServer.OFF_CMD)
