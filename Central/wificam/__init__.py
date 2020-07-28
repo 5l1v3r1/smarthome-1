@@ -28,7 +28,7 @@ class WifiCam(threading.Thread):
         self._httpd = wificam.stream.StreamServer(self)
 
     def run(self):
-        # self._httpd.start()
+        self._httpd.start()
 
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, True)
@@ -110,6 +110,9 @@ class WifiCam(threading.Thread):
                         self._frameQueue.append("END")
 
                         conn.settimeout(0.5)
+
+                    elif cmd == WifiCam.STREAM_CMD:
+                        conn.sendall(WifiCam.STREAM_CMD)
 
                 except:
                     print("[+] Connection to WifiCam server is closed.")

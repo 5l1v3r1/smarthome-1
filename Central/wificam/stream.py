@@ -8,8 +8,6 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 
 class CamPipe(threading.Thread):
 
-        STREAMCOMMAND = b"\x25"
-
         def run(self):
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, True)
@@ -39,7 +37,7 @@ def CreateHandler(wificam, pipe):
             super(StreamServerHandler, self).__init__(*args, **kwargs)
 
         def do_GET(self):
-            if self.path != "/":
+            if self.path != "/homestream":
                 self.send_response(404)
                 self.end_headers()
                 return
