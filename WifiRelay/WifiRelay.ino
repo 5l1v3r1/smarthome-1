@@ -37,7 +37,7 @@ void connectWiFi() {
 void setup() {
   pinMode(RELAY_PIN, OUTPUT);
   digitalWrite(RELAY_PIN, HIGH);
-  Serial.begin(9600);
+  Serial.begin(115200);
 
   while(!Serial);
 
