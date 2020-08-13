@@ -88,7 +88,7 @@ class Commander:
         self._telegram.sendMessage("OFF")
 
     def _shouldTurnSwitchOff(self):
-        return self._switchOnTs > 0 and currentTime() - self._switchOnTs > 10 * 60
+        return self._switchOnTs > 0 and currentTime() - self._switchOnTs > 60 * 60
 
 
 if __name__ == "__main__":
