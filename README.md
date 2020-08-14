@@ -14,7 +14,7 @@ This is the remote controlled relay component. Any device working with current l
 
 This component is made of from a 220V AC to 5V DC voltage converter and a relay connected to a [ESP32 Dev Module](https://circuits4you.com/2018/12/31/esp32-devkit-esp32-wroom-gpio-pinout/)
 
-![WifiRelay](.images/wifirelay.jpeg?raw=true "WifiRelay")
+![WifiRelay](.github/images/wifirelay.jpeg?raw=true "WifiRelay")
 
 ### WifiCam
 
