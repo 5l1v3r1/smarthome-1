@@ -14,6 +14,8 @@ This is the remote controlled relay component. Any device working with current l
 
 This component is made of from a 220V AC to 5V DC voltage converter and a relay connected to a [ESP32 Dev Module](https://circuits4you.com/2018/12/31/esp32-devkit-esp32-wroom-gpio-pinout/)
 
+![WifiRelay](.images/wifirelay.jpeg?raw=true "WifiRelay")
+
 ### WifiCam
 
 This [ESP32+cam](https://www.robotistan.com/esp32-cam-wifi-bluetooth-gelistirme-karti-ov2640-kamera-modul) module has a PIR motion sensor, a relay for enabling light source(camera needs light) and a camera on it. It dispatches an alarm if it detects a motion with PIR sensor. It has capabilities to take a photo or live stream on demand.
