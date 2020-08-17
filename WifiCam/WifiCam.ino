@@ -38,7 +38,7 @@
 #define HREF_GPIO_NUM     23
 #define PCLK_GPIO_NUM     22
 
-#define PIR_GPIO_NUM      14
+#define PIR_GPIO_NUM      13
 
 #define RELAY_GPIO_NUM    15
 
